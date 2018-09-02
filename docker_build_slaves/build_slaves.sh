@@ -19,18 +19,7 @@
 # BUSVOODOO_IMAGE = {busvoodoo:archlinux_build,...}
 # BUSVOODOO_REPO = path to checked out busvoodoo repo/branch
 
-cd arch/
-docker build -t "busvoodoo:archlinux_build" .
-echo
-
-cd ../debian/stretch/
-docker build -t "busvoodoo:stretch_build" .
-echo
-
-cd ../../ubuntu/bionic
-docker build -t "busvoodoo:bionic_build" .
-echo
-
-cd ../xenial
-docker build -t "busvoodoo:xenial_build" .
-cd ../..
+docker build -t "busvoodoo:archlinux_build" -f bv_archlinux_build.dckr .
+docker build -t "busvoodoo:xenial_build" -f bv_xenial_build.dckr .
+docker build -t "busvoodoo:bionic_build" -f bv_bionic_build.dckr .
+docker build -t "busvoodoo:stretch_build" -f bv_stretch_build.dckr .
