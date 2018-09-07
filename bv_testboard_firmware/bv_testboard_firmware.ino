@@ -128,33 +128,38 @@ void disable_multiplexer() {
 }
 
 void set_multiplexer(String result) {
+  // disable multiplexer
+  digitalWrite(MP_EN, LOW);
+  delay(500);
 
-        digitalWrite(EN, LOW);
+  // set multiplexer
+  if(result[0] = 1) {
+    digitalWrite(MP_S0, HIGH);
+  } else {
+    digitalWrite(MP_S0, LOW);
+  }
+  if(result[1] = 1) {
+    digitalWrite(MP_S1, HIGH);
+  } else {
+    digitalWrite(MP_S1, LOW);
+  }
+  if(result[2] = 1) {
+    digitalWrite(MP_S2, HIGH);
+  } else {
+    digitalWrite(MP_S2, LOW);
+  }
+  if(result[3] = 1) {
+    digitalWrite(MP_S3, HIGH);
+  } else {
+    digitalWrite(MP_S3, LOW);
+  }
 
-        if(result[0] = 1) {
-          digitalWrite(S0, HIGH);
-        } else {
-          digitalWrite(S0, LOW);
-        }
-        if(result[1] = 1) {
-          digitalWrite(S1, HIGH);
-        } else {
-          digitalWrite(S1, LOW);
-        }
-        if(result[2] = 1) {
-          digitalWrite(S2, HIGH);
-        } else {
-          digitalWrite(S2, LOW);
-        }
-        if(result[3] = 1) {
-          digitalWrite(S3, HIGH);
-        } else {
-          digitalWrite(S3, LOW);
-        }
+  // enable and power cycle multplexer
+  // (in case it has been disabled prevously)
+  digitalWrite(MP_EN, HIGH);
+  digitalWrite(MP_VCC, HIGH);
 
-        digitalWrite(MP_VCC, HIGH);
-        digitalWrite(EN, HIGH);
-        ack("set_multiplexer() -> " + result);
+  ack("set_multiplexer() -> " + result);
 }
 
 void error(String e) {
