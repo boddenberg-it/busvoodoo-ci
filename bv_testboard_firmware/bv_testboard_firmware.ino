@@ -77,6 +77,22 @@ void reset_all(){
   // no ack can be send
 }
 
+void get_multiplexer() {
+  String result ="";
+  result = result + getState(MP_S0);
+  result = result + getState(MP_S1);
+  result = result + getState(MP_S2);
+  result = result + getState(MP_S3);
+  ack("get_multiplexer() -> " + result);
+}
+
+char getState(String pin) {
+  if(digitalRead(pin)) {
+    return '1';
+  }
+  return '0';
+}
+
 void ping() {
   ack("pong");
 }
