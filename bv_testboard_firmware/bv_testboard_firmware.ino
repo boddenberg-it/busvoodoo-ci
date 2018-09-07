@@ -51,11 +51,11 @@ void setup() {
   digitalWrite(RESET_YOURSELF, LOW);
   
   Serial.begin(9600);
+  Serial.println("BusVoodoo testboard initialised...");
 }
 
 void loop() {
 
-        // 
         if (Serial.available() > 0) {
                 // read the incoming byte:
                 incomingByte = Serial.read();
