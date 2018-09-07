@@ -66,9 +66,41 @@ void loop() {
         }
 
 
+}
+
+// functions
+
+void reset_all(){
+  digitalWrite(RESET_BUSVOODOO, HIGH);
+  digitalWrite(RESET_FLASHBOARD, HIGH);
+  digitalWrite(RESET_YOURSELF, HIGH);
+  // no ack can be send
+}
+
+void reset(char device) {
+  switch(device) {
+    case 'b':
+      digitalWrite(RESET_BUSVOODOO, HIGH);
+      delay(500);
+      digitalWrite(RESET_BUSVOODOO, LOW);
+      break;
+    case 'f':
+      digitalWrite(RESET_FLASHBOARD, HIGH);
+      delay(500);
+      digitalWrite(RESET_FLASHBOARD, LOW);
+      break;
+    case 'y':
+      digitalWrite(RESET_YOURSELF, HIGH);
+      break;
+    default:
+      error("reset device nout known (b|f|y)");
+  }
+}
+
+void set_multiplexer(String result) {
+
         digitalWrite(EN, LOW);
 
-        // setMultiPlexer
         if(result[0] = 1) {
           digitalWrite(S0, HIGH);
         } else {
@@ -91,37 +123,15 @@ void loop() {
         }
 
         digitalWrite(EN, HIGH);
-
+        ack("set_multiplexer() -> " + result);
 }
-
-// functions
 
 void error(String e) {
-  Serial.println("ERROR: " + e);  
+  Serial.println("ERROR: " + e);
 }
 
-void reset_all(){
-  digitalWrite(RESET_BUSVOODOO, HIGH);
-  digitalWrite(RESET_FLASHBOARD, HIGH);
-  digitalWrite(RESET_YOURSELF, HIGH);  
+void ack(String a) {
+  Serial.println("ACK: " + a);
 }
 
-void reset(char device) {
-  switch(device) {
-    case 'b':
-      digitalWrite(RESET_BUSVOODOO, HIGH);
-      delay(500);
-      digitalWrite(RESET_BUSVOODOO, LOW);
-      break;
-    case 'f':
-      digitalWrite(RESET_FLASHBOARD, HIGH);
-      delay(500);
-      digitalWrite(RESET_FLASHBOARD, LOW);
-      break;
-    case 'y':
-      digitalWrite(RESET_YOURSELF, HIGH);
-      break;
-    default:
-      error("reset device nout known (b|f|y)");
-  }     
-}
+
