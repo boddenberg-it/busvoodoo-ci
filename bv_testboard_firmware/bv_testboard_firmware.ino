@@ -1,4 +1,4 @@
-  // PINS
+ // PINS
   // multiplexer (MP)
   int MP_VCC = 5;
   int MP_EN = 6;
@@ -57,6 +57,9 @@ void loop() {
       } break;
       case 'p': {
         ping();
+      } break;
+      case 'g': {
+        get_multiplexer();
       } break;
       case 'r': {
         Serial.println('w');
@@ -148,22 +151,22 @@ void set_multiplexer(int result) {
   delay(500);
 
   // set multiplexer
-  if(bitRead(result, 0) == 1) {
+  if(bitRead(result, 3) == 1) {
     digitalWrite(MP_S0, HIGH);
   } else {
     digitalWrite(MP_S0, LOW);
   }
-  if(bitRead(result, 1) == 1) {
+  if(bitRead(result, 2) == 1) {
     digitalWrite(MP_S1, HIGH);
   } else {
     digitalWrite(MP_S1, LOW);
   }
-  if(bitRead(result, 2) == 1) {
+  if(bitRead(result, 1) == 1) {
     digitalWrite(MP_S2, HIGH);
   } else {
     digitalWrite(MP_S2, LOW);
   }
-  if(bitRead(result, 3) == 1) {
+  if(bitRead(result, 0) == 1) {
     digitalWrite(MP_S3, HIGH);
   } else {
     digitalWrite(MP_S3, LOW);
