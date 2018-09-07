@@ -56,16 +56,41 @@ void setup() {
 
 void loop() {
 
-        if (Serial.available() > 0) {
-                // read the incoming byte:
-                incomingByte = Serial.read();
-
-                // say what you got:
-                Serial.print("I received: ");
-                Serial.println(incomingByte, DEC);
-        }
-
-
+  if (Serial.available() > 0) {
+    char request = Serial.read();
+    switch(request) {
+      case 'a':
+        reset_all();
+        break;
+      case 'b':
+        boot_bv_into_dfu_mode();
+        break;
+      case 'p':
+        ping();
+        break;
+      case 'r':
+        Serial.println('w');
+        delay(1500);
+        char input = Serial.read();
+        reset(input);
+        break;
+      case 's':
+        Serial.println('w');
+        delay(1500);
+        String input = Serial.read();
+        set_multiplexer(input);
+        break;
+      case 'd':
+        disable_multiplexer();
+        break;
+      default:
+        Serial.println("command not found");
+    }
+    // empty buffer
+    while(Serial.available() > 0) {
+      Serial.read();
+    }
+  }
 }
 
 // functions
@@ -133,22 +158,22 @@ void set_multiplexer(String result) {
   delay(500);
 
   // set multiplexer
-  if(result[0] = 1) {
+  if(result[0] == '1') {
     digitalWrite(MP_S0, HIGH);
   } else {
     digitalWrite(MP_S0, LOW);
   }
-  if(result[1] = 1) {
+  if(result[1] == '1') {
     digitalWrite(MP_S1, HIGH);
   } else {
     digitalWrite(MP_S1, LOW);
   }
-  if(result[2] = 1) {
+  if(result[2] == '1') {
     digitalWrite(MP_S2, HIGH);
   } else {
     digitalWrite(MP_S2, LOW);
   }
-  if(result[3] = 1) {
+  if(result[3] == '1') {
     digitalWrite(MP_S3, HIGH);
   } else {
     digitalWrite(MP_S3, LOW);
