@@ -153,6 +153,11 @@ void disable_multiplexer() {
 }
 
 void set_multiplexer(int result) {
+  if (result > 15) {
+    error("int greather than 15");
+    return;
+  }
+
   // disable multiplexer
   digitalWrite(MP_EN, LOW);
   delay(500);
