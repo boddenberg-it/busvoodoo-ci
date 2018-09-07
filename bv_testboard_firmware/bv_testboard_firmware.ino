@@ -119,6 +119,11 @@ void reset(char device) {
 
 void disable_multiplexer() {
   digitalWrite(MP_VCC, LOW);
+  digitalWrite(MP_EN, LOW);
+  digitalWrite(MP_S0, LOW);
+  digitalWrite(MP_S1, LOW);
+  digitalWrite(MP_S2, LOW);
+  digitalWrite(MP_S3, LOW);
   ack("disable_multiplexer()");
 }
 
