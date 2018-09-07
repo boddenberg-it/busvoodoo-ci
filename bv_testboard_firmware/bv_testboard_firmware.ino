@@ -77,6 +77,10 @@ void reset_all(){
   // no ack can be send
 }
 
+void ping() {
+  ack("pong");
+}
+
 void reset(char device) {
   switch(device) {
     case 'b':
