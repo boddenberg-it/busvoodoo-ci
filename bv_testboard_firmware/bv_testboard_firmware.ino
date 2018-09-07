@@ -1,6 +1,6 @@
 /*
- * 
- */
+ *
+ */ 
 void setup() {
 
   // multiplexer (MP)
@@ -94,4 +94,34 @@ void loop() {
 
 }
 
+// functions
 
+void error(String e) {
+  Serial.println("ERROR: " + e);  
+}
+
+void reset_all(){
+  digitalWrite(RESET_BUSVOODOO, HIGH);
+  digitalWrite(RESET_FLASHBOARD, HIGH);
+  digitalWrite(RESET_YOURSELF, HIGH);  
+}
+
+void reset(char device) {
+  switch(device) {
+    case 'b':
+      digitalWrite(RESET_BUSVOODOO, HIGH);
+      delay(500);
+      digitalWrite(RESET_BUSVOODOO, LOW);
+      break;
+    case 'f':
+      digitalWrite(RESET_FLASHBOARD, HIGH);
+      delay(500);
+      digitalWrite(RESET_FLASHBOARD, LOW);
+      break;
+    case 'y':
+      digitalWrite(RESET_YOURSELF, HIGH);
+      break;
+    default:
+      error("reset device nout known (b|f|y)");
+  }     
+}
