@@ -1,32 +1,34 @@
- // PINS
-  // multiplexer (MP)
-  int MP_VCC = 5;
-  int MP_EN = 6;
-  int MP_S0 = 7;
-  int MP_S1 = 8;
-  int MP_S2 = 9;
-  int MP_S3 = 10;
+// PINS
+// multiplexer (MP)
+int MP_VCC = 5;
+int MP_EN = 6;
+int MP_S0 = 7;
+int MP_S1 = 8;
+int MP_S2 = 9;
+int MP_S3 = 10;
 
-  // BusVoodoo (BV)
-  int BV_DFU_MODE = 19;
+// BusVoodoo (BV)
+int BV_DFU_MODE = 19;
 
-  // USB hub resets
-  int RESET_BUSVOODOO = 20;
-  int RESET_FLASHBOARD = 21;
-  int RESET_YOURSELF = 22;
+// USB hub resets
+int RESET_BUSVOODOO = 20;
+int RESET_FLASHBOARD = 21;
+int RESET_YOURSELF = 22;
+
+char buffer [16];
 
 void setup() {
   // I/O modes
-  pinMode(MP_S0, OUTPUT); 
-  pinMode(MP_S1, OUTPUT); 
-  pinMode(MP_S2, OUTPUT); 
-  pinMode(MP_S3, OUTPUT); 
-  pinMode(MP_EN, OUTPUT); 
-  pinMode(MP_VCC, OUTPUT); 
-  pinMode(BV_DFU_MODE, OUTPUT); 
-  pinMode(RESET_BUSVOODOO, OUTPUT); 
-  pinMode(RESET_FLASHBOARD, OUTPUT); 
-  pinMode(RESET_YOURSELF, OUTPUT); 
+  pinMode(MP_S0, OUTPUT);
+  pinMode(MP_S1, OUTPUT);
+  pinMode(MP_S2, OUTPUT);
+  pinMode(MP_S3, OUTPUT);
+  pinMode(MP_EN, OUTPUT);
+  pinMode(MP_VCC, OUTPUT);
+  pinMode(BV_DFU_MODE, OUTPUT);
+  pinMode(RESET_BUSVOODOO, OUTPUT);
+  pinMode(RESET_FLASHBOARD, OUTPUT);
+  pinMode(RESET_YOURSELF, OUTPUT);
 
   // pulling every output low
   digitalWrite(MP_S0, LOW);
@@ -47,40 +49,35 @@ void setup() {
 void loop() {
 
   if (Serial.available() > 0) {
-    char request = Serial.read();
-    switch(request) {
+    fill_buffer();
+    char request = buffer[0];
+    switch (request) {
       case 'a': {
-        reset_all();
-      } break;
+          reset_all();
+        } break;
       case 'b': {
-        boot_bv_into_dfu_mode();
-      } break;
+          boot_bv_into_dfu_mode();
+        } break;
       case 'p': {
-        ping();
-      } break;
+          ping();
+        } break;
       case 'g': {
-        get_multiplexer();
-      } break;
+          get_multiplexer();
+        } break;
       case 'r': {
-        Serial.println('w');
-        delay(1500);
-        char input = Serial.read();
-        reset(input);
-      } break;
+          reset(buffer[1]);
+        } break;
       case 's': {
-        Serial.println('w');
-        delay(1500);
-        int input = Serial.read();
-        set_multiplexer(input);
-      } break;
+          set_multiplexer(atoi(&buffer[1]));
+        } break;
       case 'd': {
-        disable_multiplexer();
-      } break;
+          disable_multiplexer();
+        } break;
       default:
-        Serial.println("command not found");
+        error("command not found");
     }
     // empty buffer
-    while(Serial.available() > 0) {
+    while (Serial.available() > 0) {
       Serial.read();
     }
   }
@@ -88,7 +85,15 @@ void loop() {
 
 // functions
 
-void reset_all(){
+int fill_buffer() {
+  for (int i = 0; i < 16; i++) {
+    buffer[i] = Serial.read();
+    delay(5); // necessary otherwise
+    // only first char is read
+  }
+}
+
+void reset_all() {
   digitalWrite(RESET_BUSVOODOO, HIGH);
   digitalWrite(RESET_FLASHBOARD, HIGH);
   digitalWrite(RESET_YOURSELF, HIGH);
@@ -96,14 +101,14 @@ void reset_all(){
 }
 
 char getState(int pin) {
-  if(digitalRead(pin)) {
+  if (digitalRead(pin)) {
     return '1';
   }
   return '0';
 }
 
 void get_multiplexer() {
-  String result ="";
+  String result = "";
   result = result + getState(MP_S0);
   result = result + getState(MP_S1);
   result = result + getState(MP_S2);
@@ -116,20 +121,22 @@ void ping() {
 }
 
 void reset(char device) {
-  switch(device) {
+  switch (device) {
     case 'b': {
-      digitalWrite(RESET_BUSVOODOO, HIGH);
-      delay(500);
-      digitalWrite(RESET_BUSVOODOO, LOW);
-    }break;
+        digitalWrite(RESET_BUSVOODOO, HIGH);
+        delay(500);
+        digitalWrite(RESET_BUSVOODOO, LOW);
+        ack("reset BusVoodoo");
+      } break;
     case 'f': {
-      digitalWrite(RESET_FLASHBOARD, HIGH);
-      delay(500);
-      digitalWrite(RESET_FLASHBOARD, LOW);
-    }break;
+        digitalWrite(RESET_FLASHBOARD, HIGH);
+        delay(500);
+        digitalWrite(RESET_FLASHBOARD, LOW);
+        ack("reset flashboard");
+      } break;
     case 'y': {
-      digitalWrite(RESET_YOURSELF, HIGH);
-    }break;
+        digitalWrite(RESET_YOURSELF, HIGH);
+      } break;
     default:
       error("reset device nout known (b|f|y)");
   }
@@ -151,22 +158,22 @@ void set_multiplexer(int result) {
   delay(500);
 
   // set multiplexer
-  if(bitRead(result, 3) == 1) {
+  if (bitRead(result, 3) == 1) {
     digitalWrite(MP_S0, HIGH);
   } else {
     digitalWrite(MP_S0, LOW);
   }
-  if(bitRead(result, 2) == 1) {
+  if (bitRead(result, 2) == 1) {
     digitalWrite(MP_S1, HIGH);
   } else {
     digitalWrite(MP_S1, LOW);
   }
-  if(bitRead(result, 1) == 1) {
+  if (bitRead(result, 1) == 1) {
     digitalWrite(MP_S2, HIGH);
   } else {
     digitalWrite(MP_S2, LOW);
   }
-  if(bitRead(result, 0) == 1) {
+  if (bitRead(result, 0) == 1) {
     digitalWrite(MP_S3, HIGH);
   } else {
     digitalWrite(MP_S3, LOW);
@@ -177,7 +184,7 @@ void set_multiplexer(int result) {
   digitalWrite(MP_EN, HIGH);
   digitalWrite(MP_VCC, HIGH);
 
-  ack("set_multiplexer() -> " + result);
+  ack("set_multiplexer()");
 }
 
 void error(String e) {
