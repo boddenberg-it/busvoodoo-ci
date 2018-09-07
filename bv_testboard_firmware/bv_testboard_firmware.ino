@@ -122,6 +122,7 @@ void set_multiplexer(String result) {
           digitalWrite(S3, LOW);
         }
 
+        digitalWrite(MP_VCC, HIGH);
         digitalWrite(EN, HIGH);
         ack("set_multiplexer() -> " + result);
 }
