@@ -134,4 +134,12 @@ void ack(String a) {
   Serial.println("ACK: " + a);
 }
 
-
+void boot_bv_into_dfu_mode() {
+  digitalWrite(BV_DFU_MODE, HIGH);
+  digitalWrite(RESET_BUSVOODOO, HIGH);
+  delay(500);
+  digitalWrite(RESET_BUSVOODOO, LOW);
+  delay(1000);
+  digitalWrite(BV_DFU_MODE, LOW);
+  ack("boot_bv_into_dfu_mode()");
+}
