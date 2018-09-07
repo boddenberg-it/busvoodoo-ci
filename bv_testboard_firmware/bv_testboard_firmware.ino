@@ -1,19 +1,19 @@
-  // PINS //
+  // PINS
   // multiplexer (MP)
-  int MP_S0 = 10;
-  int MP_S1 = 11;
-  int MP_S2 = 12;
-  int MP_S3 = 13;
-  int MP_EN = 14;
-  int MP_VCC = 15;
+  int MP_VCC = 5;
+  int MP_EN = 6;
+  int MP_S0 = 7;
+  int MP_S1 = 8;
+  int MP_S2 = 9;
+  int MP_S3 = 10;
 
   // BusVoodoo (BV)
-  int BV_DFU_MODE = 16;
+  int BV_DFU_MODE = 19;
 
   // USB hub resets
-  int RESET_BUSVOODOO = 17;
-  int RESET_FLASHBOARD = 18;
-  int RESET_YOURSELF = 19;
+  int RESET_BUSVOODOO = 20;
+  int RESET_FLASHBOARD = 21;
+  int RESET_YOURSELF = 22;
 
 void setup() {
   // I/O modes
