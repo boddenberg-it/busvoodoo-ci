@@ -97,6 +97,11 @@ void reset(char device) {
   }
 }
 
+void disable_multiplexer() {
+  digitalWrite(MP_VCC, LOW);
+  ack("disable_multiplexer()");
+}
+
 void set_multiplexer(String result) {
 
         digitalWrite(EN, LOW);
