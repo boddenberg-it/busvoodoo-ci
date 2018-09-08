@@ -2,8 +2,6 @@
   USED BOARD: Arduino Nano
   MAINTAINER: andre@boddenberg.it
 
-  read README.md for further information
-
 */// PINS
 
 // multiplexer (MP)
@@ -21,7 +19,7 @@ int RESET_FLASHBOARD = 21;
 int RESET_YOURSELF = 22;
 
 // buffer for incoming requests
-char buffer [16];
+char b [16];
 
 void setup() {
   // settings I/O modes
@@ -58,7 +56,7 @@ void loop() {
 
     fill_buffer();
 
-    char request = buffer[0];
+    char request = b[0];
 
     switch (request) {
       case 'a': {
@@ -74,10 +72,10 @@ void loop() {
           get_multiplexer();
         } break;
       case 'r': {
-          reset(buffer[1]);
+          reset(b[1]);
         } break;
       case 's': {
-          set_multiplexer(atoi(&buffer[1]));
+          set_multiplexer(b[1], b[2], b[3], b[4]);
         } break;
       case 'd': {
           disable_multiplexer();
@@ -95,7 +93,7 @@ void loop() {
 // functions
 void fill_buffer() {
   for (int i = 0; i < 16; i++) {
-    buffer[i] = Serial.read();
+    b[i] = Serial.read();
     delay(5); // necessary otherwise
     // only first char is read
   }
@@ -165,33 +163,29 @@ void disable_multiplexer() {
    the first 4 bits to set
    the multiplexer.
 */
-void set_multiplexer(int result) {
-  if (result > 15) {
-    error("int greather than 15");
-    return;
-  }
+void set_multiplexer(char c0, char c1, char c2, char c3) {
 
   // disable multiplexer
   digitalWrite(MP_EN, LOW);
   delay(500);
 
   // set multiplexer
-  if (bitRead(result, 3) == 1) {
+  if (c0 == '1') {
     digitalWrite(MP_S0, HIGH);
   } else {
     digitalWrite(MP_S0, LOW);
   }
-  if (bitRead(result, 2) == 1) {
+  if (c1 == '1') {
     digitalWrite(MP_S1, HIGH);
   } else {
     digitalWrite(MP_S1, LOW);
   }
-  if (bitRead(result, 1) == 1) {
+  if (c2 == '1') {
     digitalWrite(MP_S2, HIGH);
   } else {
     digitalWrite(MP_S2, LOW);
   }
-  if (bitRead(result, 0) == 1) {
+  if (c3 == '1') {
     digitalWrite(MP_S3, HIGH);
   } else {
     digitalWrite(MP_S3, LOW);
