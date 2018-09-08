@@ -16,12 +16,12 @@ The [BusVoodoo E2E tests](https://github.com/boddenberg-it/busvoodoo-ci/tree/mas
  - **p** (pings Testboard)
  - **b** (boots the BusVoodoo into DFU mode)
  - **d** (powers down the multiplexer)
- - **g** (returns the current multiplexer configuration as "4 bit String" [0101] )
+ - **s1101** (sets multiplexer: bits stand for S0, S1, S2, S3 pins on the mulitplexer board.)
+ - **g** (returns the current multiplexer configuration "ACK: 0101")
  - **r{b,f,t}** (resets (power off/on) the **B**usVoodoo, **F**lashboard, **T**estboard)
  - **a** (reset all devices)
- - **s[1101]** (sets multiplexer: bits stand for S0,S1,S2,S3 pins on the mulitplexer board.)
 
-*Note: **s[1001]** also enables the multiplexer in case it has been disabled (**d**) before.*
+*Note: **s1001** also enables the multiplexer in case it has been disabled (**d**) before.*
 
 # "Schematics"
 tbc...

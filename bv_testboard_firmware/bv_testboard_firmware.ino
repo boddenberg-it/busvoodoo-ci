@@ -119,7 +119,7 @@ void get_multiplexer() {
   result = result + getState(MP_S1);
   result = result + getState(MP_S2);
   result = result + getState(MP_S3);
-  ack("get_multiplexer() -> " + result);
+  ack(result);
 }
 
 void ping() {
