@@ -1,4 +1,11 @@
-// PINS
+/*
+  USED BOARD: Arduino Nano
+  MAINTAINER: andre@boddenberg.it
+
+  read README.md for further information
+
+*/// PINS
+
 // multiplexer (MP)
 int MP_VCC = 5;
 int MP_EN = 6;
@@ -6,19 +13,18 @@ int MP_S0 = 7;
 int MP_S1 = 8;
 int MP_S2 = 9;
 int MP_S3 = 10;
-
 // BusVoodoo (BV)
 int BV_DFU_MODE = 19;
-
 // USB hub resets
 int RESET_BUSVOODOO = 20;
 int RESET_FLASHBOARD = 21;
 int RESET_YOURSELF = 22;
 
+// buffer for incoming requests
 char buffer [16];
 
 void setup() {
-  // I/O modes
+  // settings I/O modes
   pinMode(MP_S0, OUTPUT);
   pinMode(MP_S1, OUTPUT);
   pinMode(MP_S2, OUTPUT);
@@ -49,8 +55,11 @@ void setup() {
 void loop() {
 
   if (Serial.available() > 0) {
+
     fill_buffer();
+
     char request = buffer[0];
+
     switch (request) {
       case 'a': {
           reset_all();
@@ -76,7 +85,7 @@ void loop() {
       default:
         error("command not found");
     }
-    // empty buffer
+    // flush buffer
     while (Serial.available() > 0) {
       Serial.read();
     }
@@ -84,7 +93,6 @@ void loop() {
 }
 
 // functions
-
 int fill_buffer() {
   for (int i = 0; i < 16; i++) {
     buffer[i] = Serial.read();
@@ -100,6 +108,7 @@ void reset_all() {
   // no ack can be send
 }
 
+// helper for get_multiplexer()
 char getState(int pin) {
   if (digitalRead(pin)) {
     return '1';
@@ -152,6 +161,10 @@ void disable_multiplexer() {
   ack("disable_multiplexer()");
 }
 
+/* takes number [0,15] and uses
+   the first 4 bits to set
+   the multiplexer.
+*/
 void set_multiplexer(int result) {
   if (result > 15) {
     error("int greather than 15");
