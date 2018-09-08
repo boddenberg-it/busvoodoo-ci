@@ -5,12 +5,12 @@
 */// PINS
 
 // multiplexer (MP)
-int MP_VCC = 5;
-int MP_EN = 6;
-int MP_S0 = 7;
-int MP_S1 = 8;
-int MP_S2 = 9;
-int MP_S3 = 10;
+int MP_VCC = 2;
+int MP_EN = 3;
+int MP_S0 = 4;
+int MP_S1 = 5;
+int MP_S2 = 6;
+int MP_S3 = 7;
 // BusVoodoo (BV)
 int BV_DFU_MODE = 19;
 // USB hub resets
@@ -19,7 +19,7 @@ int RESET_FLASHBOARD = 21;
 int RESET_YOURSELF = 22;
 
 // buffer for incoming requests
-char b [16];
+char b[16];
 
 void setup() {
   // settings I/O modes
