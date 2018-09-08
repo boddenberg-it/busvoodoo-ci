@@ -1,9 +1,7 @@
 node('BusVoodoo_E2E_CLI') {
 timestamps {
-    stage('Clean WS'){
-        cleanWs()
-    }
-    stage('Checkout') {
+    stage('Clean WS + Checkout') {
+    cleanWs()
     dir('source') {
 	try { // try catch to reuse groovy script for nightly and dev pipeline
 		git branch: "${GIT_BRANCH}", url: 'https://git.cuvoodoo.info/stm32f1'
@@ -11,51 +9,54 @@ timestamps {
 		git branch: 'busvoodoo', url: 'https://git.cuvoodoo.info/stm32f1'
 	}	 
     }
-    sh 'echo "#!/bin/sh" > source/jenkins_build.sh'
-    sh 'echo "BUSVOODOO_HARDWARE_VERSION=0 rake; mv application.bin application_v0.bin; rake clean; BUSVOODOO_HARDWARE_VERSION=1 rake; mv application.bin application_vA.bin" >> source/jenkins_build.sh; chmod 755 source/jenkins_build.sh'
-    sh 'mkdir xenial bionic stretch archlinux'
-    sh 'echo xenial bionic stretch archlinux | xargs -n 1 cp -ar source'
-   }
+    // partial https checkout of busvoodoo-ci repo to get latest jenkins_build.sh script 
+    sh 'curl -o jenkins_build.sh https://raw.githubusercontent.com/boddenberg-it/busvoodoo-ci/master/jenkins_scripts/jenkins_build.sh; chmod +x jenkins_build.sh; cp jenkins_build.sh source/; ./jenkins_build.sh prepare'
+    }
 
-    stage('compile') {
+    stage('Compile on distros') {
     parallel xenial: {
-        sh 'docker run -t --rm=true -v "$(pwd)/xenial/source":/tmp bvbs_xenial ./jenkins_build.sh'
+        sh 'docker run -t --rm=true -v "$(pwd)/xenial/source":/tmp bvbs_xenial ./jenkins_build.sh xenial'
     }, bionic: {
-        sh 'docker run -t --rm=true -v "$(pwd)/bionic/source":/tmp bvbs_bionic ./jenkins_build.sh'
+        sh 'docker run -t --rm=true -v "$(pwd)/bionic/source":/tmp bvbs_bionic ./jenkins_build.sh bionic'
     }, stretch: {
-        sh 'docker run -t --rm=true -v "$(pwd)/stretch/source":/tmp bvbs_stretch ./jenkins_build.sh'
+        sh 'docker run -t --rm=true -v "$(pwd)/stretch/source":/tmp bvbs_stretch ./jenkins_build.sh stretch'
     }, archlinux: {
-        sh 'docker run -t --rm=true -v "$(pwd)/archlinux/source":/tmp bvbs_archlinux ./jenkins_build.sh'
+        sh 'docker run -t --rm=true -v "$(pwd)/archlinux/source":/tmp bvbs_archlinux ./jenkins_build.sh archlinux'
     }
     failFast: false
     }
 
-    stage('archive') {
-
-        sh 'mv xenial/source/application_v0.bin application_v0_xenial.bin || true'
-        sh 'mv bionic/source/application_v0.bin application_v0_bionic.bin || true'
-        sh 'mv stretch/source/application_v0.bin application_v0_stretch.bin || true'
-        sh 'mv archlinux/source/application_v0.bin application_v0_archlinux.bin || true'
-        
-        sh 'mv xenial/source/application_vA.bin application_vA_xenial.bin || true'
-        sh 'mv bionic/source/application_vA.bin application_vA_bionic.bin || true'
-        sh 'mv stretch/source/application_vA.bin application_vA_stretch.bin || true'
-        sh 'mv archlinux/source/application_vA.bin application_vA_archlinux.bin || true'
-
-        archiveArtifacts '*.bin, *.elf'
+    stage('Archive bins') {
+	sh 'cp source/README.md source/LICENSE.txt .'
+        archiveArtifacts '*.bin, *.elf, README.md, LICENSE.txt'
     }
     
-   //stage('Flash') {
-   //	sh 'dfu-util --device "${DEVICE_ID}" --download application_v0_archlinux.bin'
+   // TODO: parallize this step with a BusVoodoo vA slave
+   //stage('Flash/boot bionic FW') {
+   //	sh 'jenkins_build.sh flash bionic'
    //}
-   
+
+   //stage('Flash/boot xenial FW') {
+   //	sh 'jenkins_build.sh flash xenial'
+   //}
+
+   //stage('Flash/boot stretch FW') {
+   //	sh 'jenkins_build.sh flash archlinux'
+   //}
+
+   //stage('Flash/boot arch FW') {
+   //	sh 'jenkins_build.sh flash archlinux'
+   //}
    //stage('Test BusVoodoo v0'){
    //    sh 'BusVoodoo_e2e_tests.py'
    //}
 	
-   //stage('Expose test report') {
+   //stage('Expose test reports') {
    //    junit healthScaleFactor: 1.5, testResults: '*_test-report.xml'
    //}
 
+   //stage('Clean WS') {
+   //	cleanWs()
+   //}
 }
 }
