@@ -16,10 +16,10 @@
 #	BUSVOODOO_HARDWARE_VERSION="$HARDWARE_VERSION" rake
 #
 # HARDWARE_VERSION = {0,1}
-# BUSVOODOO_IMAGE = {busvoodoo:archlinux_build,...}
+# BUSVOODOO_IMAGE = {busvoodoo/archlinux_build,...}
 # BUSVOODOO_REPO = path to checked out busvoodoo repo/branch
 
-docker build -t "busvoodoo:archlinux_build" -f bv_archlinux_build.dckr .
-docker build -t "busvoodoo:xenial_build" -f bv_xenial_build.dckr .
-docker build -t "busvoodoo:bionic_build" -f bv_bionic_build.dckr .
-docker build -t "busvoodoo:stretch_build" -f bv_stretch_build.dckr .
+docker build -t "busvoodoo/archlinux_build" -f bv_archlinux_build.dckr .
+docker build -t "busvoodoo/xenial_build" -f bv_xenial_build.dckr .
+docker build -t "busvoodoo/bionic_build" -f bv_bionic_build.dckr .
+docker build -t "busvoodoo/stretch_build" -f bv_stretch_build.dckr .
