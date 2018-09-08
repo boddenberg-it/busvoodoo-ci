@@ -1,2 +1,2 @@
-The BusVoodoo.groovy file holds the actual Jenkins Pipeline script, which is used by both nightly and dev pipeline.
-These Pipelines are deployed via a JobDSL Seed job.
+The BusVoodoo.groovy file holds the actual [Jenkins Pipeline script](https://jenkins.io/doc/book/pipeline/syntax/), which is used by both nightly and dev pipeline.
+These Pipelines are deployed via a [JobDSL](https://jenkinsci.github.io/job-dsl-plugin/#method/javaposse.jobdsl.dsl.DslFactory.pipelineJob) [Seed job](https://jenkinsci.github.io/job-dsl-plugin/#method/javaposse.jobdsl.dsl.helpers.step.StepContext.dsl).
