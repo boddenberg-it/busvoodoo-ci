@@ -1,8 +1,9 @@
 BusVoodoo docker images used for build pipelines on https://jenkins.blobb.me.
 
-The build.sh script will build all images and is also used to re-build latest images on jenkins slaves themselves weekly.
+The build.sh script builds all images and is also used to re-build latest images on jenkins slaves themselves weekly.
 
-Moreover, one can use these images to build locally with a different distro. This can be achieved by following invocation after desired image is build:
+Moreover, one can use these images to build locally with a different distro. 
+This can be achieved by following invocation after desired image is build:
 
 ```
 docker run -it --rm=true \
