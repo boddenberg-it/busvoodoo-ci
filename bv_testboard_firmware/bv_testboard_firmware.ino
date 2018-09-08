@@ -93,7 +93,7 @@ void loop() {
 }
 
 // functions
-int fill_buffer() {
+void fill_buffer() {
   for (int i = 0; i < 16; i++) {
     buffer[i] = Serial.read();
     delay(5); // necessary otherwise
