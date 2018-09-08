@@ -3,20 +3,19 @@
   MAINTAINER: andre@boddenberg.it
 
 */// PINS
-
 // multiplexer (MP)
-int MP_VCC = 2;
-int MP_EN = 3;
-int MP_S0 = 4;
-int MP_S1 = 5;
-int MP_S2 = 6;
-int MP_S3 = 7;
+int MP_VCC = 2; // D2
+int MP_EN = 3; // D3
+int MP_S0 = 4; // D4
+int MP_S1 = 5; // D5
+int MP_S2 = 6; // D6
+int MP_S3 = 7; // D7
 // BusVoodoo (BV)
-int BV_DFU_MODE = 19;
+int BV_DFU_MODE = 14; // A0
 // USB hub resets
-int RESET_BUSVOODOO = 20;
-int RESET_FLASHBOARD = 21;
-int RESET_YOURSELF = 22;
+int RESET_BUSVOODOO = 15; // A1
+int RESET_FLASHBOARD = 16; // A2
+int RESET_YOURSELF = 17; // A3
 
 // buffer for incoming requests
 char b[16];
