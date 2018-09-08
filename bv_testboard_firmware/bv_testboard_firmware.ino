@@ -143,11 +143,11 @@ void reset(char device) {
         digitalWrite(RESET_FLASHBOARD, LOW);
         ack("reset flashboard");
       } break;
-    case 'y': {
+    case 't': {
         digitalWrite(RESET_YOURSELF, HIGH);
       } break;
     default:
-      error("reset device nout known (b|f|y)");
+      error("reset device not known (b|f|t)");
   }
 }
 
