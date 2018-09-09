@@ -1,8 +1,9 @@
-BusVoodoo docker images used for build pipelines on https://jenkins.blobb.me.
+# BusVoodoo docker images
+..used for build pipelines on https://jenkins.blobb.me.
 
 The build.sh script builds all images and is also used to re-build latest images on jenkins slaves themselves weekly.
 
-Moreover, one can use these images to build locally with a different distro. 
+Moreover, one can use these images to build locally with a different distro.
 This can be achieved by following invocation after desired image is build:
 
 ```
@@ -12,8 +13,6 @@ docker run -it --rm=true \
         BUSVOODOO_HARDWARE_VERSION="$HARDWARE_VERSION" rake
 
 $HARDWARE_VERSION = {0,1}
-$BUSVOODOO_IMAGE = {busvoodoo:archlinux_build,...}
+$BUSVOODOO_IMAGE = {busvoodoo/archlinux_build,...}
 $BUSVOODOO_REPO = absolute path to checked out busvoodoo repo/branch
 ```
-
-
