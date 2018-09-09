@@ -6,6 +6,7 @@ import serial
 import time
 import yaml
 from junit_xml import TestSuite, TestCase
+import sys
 
 def log(msg):
     print '[INFO] %s' % msg
@@ -14,10 +15,9 @@ def err(msg):
     print '[ERROR] %s' % msg
 
 def generic_input_test(input, expectation):
-
     bv_serial.write(b'%s\r' % input)
     output = bv_serial.readlines()
-    output_stripped = '.'.join(output)
+    output_stripped = ''.join(output)
     result = 0
 
     for e in expectation:
@@ -92,11 +92,66 @@ def selftest():
 
 ############### actual script ##############
 
+
+log('init serial connection to BusVoodoo...')
+bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
+#log('[INFO] init serial connection to BusVoodoo...')
+#tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
+
 log('opening Busvoodoo configuration YAML file...')
 with open("BusVoodoo.yml", 'r') as stream:
-    data_loaded = yaml.load(stream)
+    yaml = yaml.load(stream)
 # loop over all protocols and do the default check
-#print(len(data_loaded["protocols"]))
+print(len(yaml["protocols"]))
+
+# for testing
+commands = yaml["protocols"]["spi"]["commands"]
+for command in commands:
+    expectation = yaml["protocols"]["spi"]["commands"][command]
+    result = generic_input_test('a %s' % command, expectation)
+    print result.pop()
+    #print result.pop()
+    #print result.pop()
+    print
+# run all combinations of choices for each protocol
+for protocol in yaml["protocols"]:
+    inputs = yaml["protocols"][protocol]["combinations"]["inputs"]
+    expectations = yaml["protocols"][protocol]["combinations"]["expectations"]
+
+    permutations = list(itertools.product(*inputs))
+    for permutation in permutations:
+        test_name = "%s_combination-test_%s".format(protocol, permutation)
+        generic_inputs_test(test_name, permutation, expectations)
+
+
+
+def add_report_to_XML_report(report):
+    result = report.pop()
+    sent_input = report.pop()
+    output = report.pop()
+
+
+
+
+
+# start testsuite commands_test
+#
+# run all tests for commands
+for command in yaml["commands"]:
+    for input in yaml["commands"][command]['input']:
+        report = generic_input_test(input, yaml["commands"][command]['expectation'])
+        # add_report_to_XML_report(command, report)
+        # remove following lines after creating JUnit XML stuff
+        result = report.pop()
+        sent_input = report.pop()
+        output = report.pop()
+
+        print result
+        print sent_input
+        print output
+        print
+
+
 # loop over all combinations for all protocols
 #print(len(data_loaded["protocols"][0]))
 #print(data_loaded["protocols"][0]["name"])
@@ -107,10 +162,10 @@ with open("BusVoodoo.yml", 'r') as stream:
 #print(data_loaded["protocols"][0]["c4"])
 #print(data_loaded["protocols"][0]["c5"])
 #    print
-log('init serial connection to BusVoodoo...')
-bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
-#log('[INFO] init serial connection to BusVoodoo...')
-#tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
+
+
+sys.exit(2)
+
 
 
 
