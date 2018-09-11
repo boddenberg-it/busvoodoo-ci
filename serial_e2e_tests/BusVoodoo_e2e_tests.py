@@ -86,10 +86,10 @@ def reset_busvoodoo():
 
 
 def generic_inputs(inputs, expectations):
-
+    err_msg = ' generic_inputs(): inputs[] and expectations[] do not have equal length'
     if len(inputs) != len(expectations):
-        err('generic_inputs(): inputs and expectations do not have equal length!')
-        return 13
+        err(err_msg)
+        return [1, err_msg]
 
     reset_busvoodoo()
     outputs = ''
@@ -99,8 +99,8 @@ def generic_inputs(inputs, expectations):
         outputs += result[1]
         # fail fast
         if  result[0] > 0:
-            return [ 1, outputs ]
-    return [ 0, outputs ]
+            return [1, outputs]
+    return [0, outputs]
 
 ### TEST SPECIIC FUNCTIONS
 def prot_default_settings_test(protocol):
@@ -212,3 +212,4 @@ for permutation in permutations:
         success(name)
     testsuite.add_testcase(tc)
 add_testsuite(testsuite)
+write_xml_report(testsuites)
