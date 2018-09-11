@@ -177,8 +177,8 @@ for command in yaml["commands"]:
             generic_input_test(input, expectation,
                 "{0} [{1}]".format(command, input)))
 
-#for testcase in selftest():
-#    testsuite.add_testcase(testcase)
+for testcase in selftest():
+    testsuite.add_testcase(testcase)
 
 add_testsuite(testsuite)
 
