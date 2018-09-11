@@ -3,6 +3,7 @@
 #       quit, live in python script.
 
 commands:
+  # self-test and pins-test live in python script.
   version:
     input: [ 'v', 'version' ]
     expectation: [ 'BusVoodoo flavor', 'firmware date', 'device ID' ]
@@ -11,15 +12,15 @@ commands:
     expectation: [ 'available modes', 'hiz']
   help:
     input: [ 'h', 'help' ]
-    expectation: [ 'oodoo' ]
+    expectation: [ 'available commands', 'bootloader', 'pinout' ]
   pinout:
     input: [ 'p', 'pinout' ]
     expectation: [ 'I/O connector pinout:' ]
-  power on:
-    input: [ 'P off', 'power off']
-    expectation: [ '5V power rail: off', '3V3 power rail: off']
   power off:
     input: [ 'P off', 'power off']
+    expectation: [ 'off', 'power rail' ]
+  power on:
+    input: [ 'P on', 'power on']
     expectation: [ '5V', '3V3', '5.', '3.' ]
   voltage:
     input: ['L', 'LV']
@@ -34,7 +35,7 @@ protocols:
         - [1, 2, 3, 4, 5, 6, 7, 8, 9]
         - [8, 16]
         - [1, 2]
-        - [1, 2, 3, 4]
+        - [1, 2, 3, 6]
         - [1, 2, 3]
       expectations:
         - ['duplex mode', 'full-duplex', 'bidirectional']
@@ -54,18 +55,20 @@ protocols:
       '0b1': ['write: 0x01', 'read: 0x00']
       "'a'": ['write: 0x61', 'read: 0x00']
       r: ['write: 0xff', 'read: 0x00']
-      u: 'wait for 1 us'
-      m: 'wait for 1 ms'
-      m:42: 'wait for 42 ms'
+      u: ['wait for 1 us']
+      m: ['wait for 1 ms']
+      m:42: ['wait for 42 ms']
+      x: ['andre']
 
     combinations:
       inputs:
-        - [1, 2]
-        - [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        - [8, 16]
-        - [1, 2]
-        - [1, 2, 3, 4]
-        - [1, 2, 3]
+        - ['m spi']
+        - ['1', '2']
+        - ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        - ['8', '16']
+        - ['1', '2']
+        - ['1', '2', '3', '6']
+        - ['1', '2', '3']
       expectations:
         - ['duplex mode', 'full-duplex', 'bidirectional']
         - ['frequency', '18000 kHz', '9000 kHz', '4500 kHz', '2250 kHz', '1125 kHz', '562 kHz', '281 kHz', '140 kHz']
@@ -73,6 +76,7 @@ protocols:
         - ['data frame bit order', 'most significant bit first', 'least significant bit first']
         - ['mode', '0', '1', '2', '3', '4']
         - ['drive mode', 'push', 'external', 'embedded']
+        - ['SPI:']
 
   1-wire:
     commands:
