@@ -35,6 +35,11 @@ def bv_send(msg):
 def add_testsuite(testsuite):
     testsuites.insert(len(testsuites), testsuite)
 
+def create_testsuite(name):
+    print colored('hallo', 'blue')
+    log('executing: %s' % name)
+    return TestSuite(name)
+
 def write_xml_report(testsuites):
 	xml = JUnitXml()
 	for testsuite in testsuites:
@@ -47,6 +52,7 @@ def open_protocol(protocol):
         bv_send('')
 
 def create_testsuite(name):
+    print
     log('executing %s' % name)
     return TestSuite(name)
 
@@ -136,7 +142,7 @@ def selftest():
     output = '.'.join(bv_serial.readlines())
     if 'self-test succeeded' not in output:
         error(str_s)
-        tc_s.result = Error(output, 'error')
+        tc_s.result = Error(ansi_escape.sub('', output), 'error')
     else:
         success(str_s)
 
@@ -145,7 +151,7 @@ def selftest():
     output = '.'.join(bv_serial.readlines())
     if 'self-test succeeded' not in output:
         error(str_self_test)
-        tc_selftest.result = Error(output, 'error')
+        tc_selftest.result = Error(ansi_escape.sub('', output), 'error')
     else:
         success(output)
     return [tc_s, tc_selftest]
@@ -166,10 +172,9 @@ bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
 #tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
 
 reset_busvoodoo() # quit to HiZ mode
-print # to have an empty space before TestSuite run
 
-log('executing: general commands testsuite')
-testsuite = TestSuite('general commands tests')
+#
+testsuite = create_testsuite('general commands tests')
 for command in yaml["commands"]:
     expectation = yaml["commands"][command]['expectation']
     for input in yaml["commands"][command]['input']:
@@ -179,17 +184,18 @@ for command in yaml["commands"]:
 
 for testcase in selftest():
     testsuite.add_testcase(testcase)
-
+#for testcase in pinstest():it
+#   testsuite.add_testcase(testcase) 
 add_testsuite(testsuite)
 
-log('executing: default protocol tests')
-testsuite = TestSuite('desfault protocol tests')
+#
+testsuite = create_testsuite('default protocol tests')
 for protocol in yaml["protocols"]:
     testsuite.add_testcase(prot_default_settings_test(protocol))
 add_testsuite(testsuite)
 
-log('executing: spi commands tests')
-testsuite = TestSuite('spi commands tests')
+#
+testsuite = create_testsuite('spi commands tests')
 commands = yaml["protocols"]["spi"]["commands"]
 open_protocol('spi')
 for command in commands:
@@ -209,8 +215,7 @@ protocol = 'spi'
 inputs = yaml["protocols"][protocol]["combinations"]["inputs"]
 expectations = yaml["protocols"][protocol]["combinations"]["expectations"]
 permutations = list(itertools.product(*inputs))
-testsuite = TestSuite('%s_configuration_combinations_tests' % protocol)
-log('executing spi combinations tests')
+testsuite = create_testsuite('%s_configuration_combinations_tests' % protocol)
 
 for permutation in permutations:
     name = 'spi_combination-test_%s' % '-'.join(permutation)
