@@ -24,7 +24,7 @@ def err(msg):
     print  colored('[ERROR] %s' % msg, 'red')
 
 def failure(msg):
-    print  colored('[FAILURE] %s' % msg, 'orange')
+    print  colored('[FAILURE] %s' % msg, 'red')
 
 def success(msg):
     print  colored('[SUCCESS] %s' % msg, 'green')
@@ -46,6 +46,10 @@ def open_protocol(protocol):
     for i in range(10):
         bv_serial.write(b'\r')
 
+def create_testsuite(name):
+    log('executing %s' % name)
+    return TestSuite(name)
+
 ### GENERIC TEST FUNCTIONS ###
 def generic_input(input, expectation):
     #flush buffer befor sending command
@@ -59,7 +63,7 @@ def generic_input(input, expectation):
             return 1
     return 0
 
-def generic_input_test(testname, input, expectation):
+def generic_input_test(input, expectation, testname):
     tc = TestCase(testname)
     #flush buffer befor sending command
     bv_serial.readlines()
@@ -69,7 +73,6 @@ def generic_input_test(testname, input, expectation):
 
     for e in expectation:
         if e not in output_stripped:
-            print output_stripped
             tc.result = Error(ansi_escape.sub('', output_stripped), 'error')
             failure(testname)
             return tc
@@ -100,11 +103,8 @@ def prot_default_settings_test(protocol):
     #
     tc = TestCase('default protocol test: %s' % protocol)
     open_protocol(protocol)
-    # Note: will not work anymore if more than 15 options available
-    for i in range(15):
-        bv_send('\r')
-    #
     result = bv_serial.readlines()
+    # add why we are doing this...
     if str.lower(protocol) not in str.lower(result[len(result)-1]):
         tc.result = Error(ansi_escape.sub('',''.join(result)), 'error')
         failure('default protocol %s test' % protocol)
@@ -155,40 +155,35 @@ with open("BusVoodoo.yml", 'r') as stream:
 bv_serial.write(b'q\r') # quit to HiZ mode
 print # to have an empty space before TestSuite run
 
-log('executing: general commands testsuite')
-testsuite = TestSuite('general commands tests')
-for command in yaml["commands"]:
-    expectation = yaml["commands"][command]['expectation']
-    for input in yaml["commands"][command]['input']:
-        testsuite.add_testcase(
-            generic_input_test("{0} [{1}]".format(command, input),
-                input, expectation))
-add_testsuite(testsuite)
+#log('executing: general commands testsuite')
+#testsuite = TestSuite('general commands tests')
+#for command in yaml["commands"]:
+#    expectation = yaml["commands"][command]['expectation']
+#    for input in yaml["commands"][command]['input']:
+#        testsuite.add_testcase(
+#            generic_input_test(input, expectation,
+#                "{0} [{1}]".format(command, input)))
+#add_testsuite(testsuite)
+#
+#log('executing: default protocol tests')
+#testsuite = TestSuite('default protocol tests')
+#for protocol in yaml["protocols"]:
+#    testsuite.add_testcase(prot_default_settings_test(protocol))
+#add_testsuite(testsuite)
 
-log('executing: default protocol tests')
-testsuite = TestSuite('default protocol tests')
-for protocol in yaml["protocols"]:
-    testsuite.add_testcase(prot_default_settings_test(protocol))
+log('executing: spi commands tests')
+testsuite = TestSuite('spi commands tests')
+commands = yaml["protocols"]["spi"]["commands"]
+open_protocol('spi')
+for command in commands:
+    expectation = yaml["protocols"]["spi"]["commands"][command]
+    testsuite.add_testcase(generic_input_test('a %s' % command, expectation,
+        'spi command test: a %s' % command))
 add_testsuite(testsuite)
 
 
 write_xml_report(testsuites)
 sys.exit(0)
-
-
-
-bv_serial.write(b'q\r')
-testsuite = create_test_suite('spi commands tests')
-commands = yaml["protocols"]["spi"]["commands"]
-open_protocol('spi')
-for command in commands:
-    tc = create_test_case('spi command: %s' % command)
-    expectation = yaml["protocols"]["spi"]["commands"][command]
-    result = generic_input_test('a %s' % command, expectation)
-    if result.pop() > 0:
-        tc.result = Error(result.pop(), 'error')
-    testsuite.add_testcase(tc)
-testsuites.insert(len(testsuites), testsuite)
 
 # run all combinations of choices for each protocol
 #for protocol in yaml["protocols"]:
