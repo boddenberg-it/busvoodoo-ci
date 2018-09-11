@@ -54,14 +54,14 @@ def create_testsuite(name):
 def generic_input(input, expectation):
     #flush buffer befor sending command
     bv_serial.readlines()
-    bv_serial.write(b'%s\r' % input)
+    bv_send(input)
     output = (bv_serial.readlines())
     output_stripped = ''.join(output)
 
     for e in expectation:
-        if e not in output_stripped:
-            return 1
-    return 0
+        if e is not '' and e not in output_stripped:
+            return [ 1, output_stripped ]
+    return [ 0, output_stripped ]
 
 def generic_input_test(input, expectation, testname):
     tc = TestCase(testname)
@@ -79,24 +79,28 @@ def generic_input_test(input, expectation, testname):
     success(testname)
     return tc
 
-def generic_inputs_test(testname, inputs, expectations):
-    tc = TestCase(testname)
-    if len(inputs) != len(expectations):
-        err('invalid')
-        tc.result = skipped()
-        return
+def reset_busvoodoo():
+    for i in range(10):
+        bv_send('')
+    bv_send('q')
 
-    exit_codes = 0
+
+def generic_inputs(inputs, expectations):
+
+    if len(inputs) != len(expectations):
+        err('generic_inputs(): inputs and expectations do not have equal length!')
+        return 13
+
+    reset_busvoodoo()
     outputs = ''
-    inputs = ''
 
     for i in range(len(inputs)):
-        result = generic_input_test(inputs[i], expectations[i])
-        exit_codes += result.pop()
-        outputs += result.pop()
-        inputs += result.pop()
-
-    return {exit_codes, outputs, inputs}
+        result = generic_input(inputs[i], expectations[i])
+        outputs += result[1]
+        # fail fast
+        if  result[0] > 0:
+            return [ 1, outputs ]
+    return [ 0, outputs ]
 
 ### TEST SPECIIC FUNCTIONS
 def prot_default_settings_test(protocol):
@@ -142,34 +146,35 @@ def pinstest():
     print "TBC..."
 
 ############### actual script #####################
-# init serial connections
-log('...init serial connection to BusVoodoo')
-bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
-#log('...init serial connection to testboard...')
-#tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
 
-log('...opening Busvoodoo configuration YAML file')
+log('opening Busvoodoo configuration YAML file...')
 with open("BusVoodoo.yml", 'r') as stream:
     yaml = yaml.load(stream)
 
-bv_serial.write(b'q\r') # quit to HiZ mode
+log('init serial connection to BusVoodoo...')
+bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
+
+#log('...init serial connection to testboard...')
+#tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
+
+reset_busvoodoo() # quit to HiZ mode
 print # to have an empty space before TestSuite run
 
-#log('executing: general commands testsuite')
-#testsuite = TestSuite('general commands tests')
-#for command in yaml["commands"]:
-#    expectation = yaml["commands"][command]['expectation']
-#    for input in yaml["commands"][command]['input']:
-#        testsuite.add_testcase(
-#            generic_input_test(input, expectation,
-#                "{0} [{1}]".format(command, input)))
-#add_testsuite(testsuite)
-#
-#log('executing: default protocol tests')
-#testsuite = TestSuite('default protocol tests')
-#for protocol in yaml["protocols"]:
-#    testsuite.add_testcase(prot_default_settings_test(protocol))
-#add_testsuite(testsuite)
+log('executing: general commands testsuite')
+testsuite = TestSuite('general commands tests')
+for command in yaml["commands"]:
+    expectation = yaml["commands"][command]['expectation']
+    for input in yaml["commands"][command]['input']:
+        testsuite.add_testcase(
+            generic_input_test(input, expectation,
+                "{0} [{1}]".format(command, input)))
+add_testsuite(testsuite)
+
+log('executing: default protocol tests')
+testsuite = TestSuite('desfault protocol tests')
+for protocol in yaml["protocols"]:
+    testsuite.add_testcase(prot_default_settings_test(protocol))
+add_testsuite(testsuite)
 
 log('executing: spi commands tests')
 testsuite = TestSuite('spi commands tests')
@@ -182,28 +187,28 @@ for command in commands:
 add_testsuite(testsuite)
 
 
+log('writing xml report to file...')
 write_xml_report(testsuites)
-sys.exit(0)
 
 # run all combinations of choices for each protocol
 #for protocol in yaml["protocols"]:
-
 protocol = 'spi'
 
 inputs = yaml["protocols"][protocol]["combinations"]["inputs"]
 expectations = yaml["protocols"][protocol]["combinations"]["expectations"]
-
-testsuite = create_test_suite('%s_configuration_combinations_tests' % protocol)
 permutations = list(itertools.product(*inputs))
+testsuite = TestSuite('%s_configuration_combinations_tests' % protocol)
+log('executing spi combinations tests')
 
 for permutation in permutations:
-    tc = create_test_case('spi_combination-test_%s' % '-'.join(permutation))
-    result = generic_inputs_test(permutation, expectations)
-    if result.pop() > 0:
-        tc.Result = Error(result.pop(), 'error')
+    name = 'spi_combination-test_%s' % '-'.join(permutation)
+    tc = TestCase(name)
+    result = generic_inputs(permutation, expectations)
+    if result[0] > 0:
+        error = result[1]
+        tc.Result = Error(error, 'error')
+        failure(name)
+    else:
+        success(name)
     testsuite.add_testcase(tc)
-testsuites.insert(len(testsuites), testsuite)
-
-write_xml_report(testsuites)
-
-sys.exit(0)
+add_testsuite(testsuite)

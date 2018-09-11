@@ -50,33 +50,33 @@ protocols:
   spi:
     commands:
       # "[/]	select/deselect slave" is not tested
-      10100: ['write: 0x74', 'read: 0x00']
-      '0x3a': ['write: 0x3a', 'read: 0x00']
-      '0b1': ['write: 0x01', 'read: 0x00']
-      "'a'": ['write: 0x61', 'read: 0x00']
-      r: ['write: 0xff', 'read: 0x00']
-      u: ['wait for 1 us']
-      m: ['wait for 1 ms']
-      m:42: ['wait for 42 ms']
-      x: ['andre']
+      10100: [ 'write: 0x74' ]
+      '0x3a': [ 'write: 0x3a' ]
+      '0b1': [ 'write: 0x01' ]
+      "'a'": [ 'write: 0x61' ]
+      r: [ 'read: 0x00' ]
+      u: [ 'wait for 1 us' ]
+      m: [ 'wait for 1 ms' ]
+      m:42: [ 'wait for 42 ms' ]
+      x: [ 'andre' ]
 
     combinations:
       inputs:
         - ['m spi']
         - ['1', '2']
-        - ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        - ['1', '2', '3', '4', '5', '6', '7', '8' ]
         - ['8', '16']
         - ['1', '2']
-        - ['1', '2', '3', '6']
+        - ['1', '2', '3', '4']
         - ['1', '2', '3']
       expectations:
-        - ['duplex mode', 'full-duplex', 'bidirectional']
-        - ['frequency', '18000 kHz', '9000 kHz', '4500 kHz', '2250 kHz', '1125 kHz', '562 kHz', '281 kHz', '140 kHz']
-        - ['data frame width in bits']
-        - ['data frame bit order', 'most significant bit first', 'least significant bit first']
-        - ['mode', '0', '1', '2', '3', '4']
-        - ['drive mode', 'push', 'external', 'embedded']
-        - ['SPI:']
+        - [ 'duplex mode', 'full-duplex', 'bidirectional']
+        - [ '18000 kHz', '1125 kHz', '140 kHz' ]
+        - [ 'data frame width in bits' ] # has no output line...
+        - [ 'most significant', 'least significant' ]
+        - [ 'mode', '0', '3' ]
+        - [ 'push', 'external', 'embedded']
+        - [ 'SPI:' ]
 
   1-wire:
     commands:
