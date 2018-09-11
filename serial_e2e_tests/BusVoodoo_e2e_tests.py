@@ -20,7 +20,7 @@ testsuites = []
 def log(msg):
     print colored('[INFO] %s' % msg, 'yellow')
 
-def err(msg):
+def error(msg):
     print colored('[ERROR] %s' % msg, 'red')
 
 def failure(msg):
@@ -88,7 +88,7 @@ def reset_busvoodoo():
 def generic_inputs(inputs, expectations):
     err_msg = ' generic_inputs(): inputs[] and expectations[] do not have equal length'
     if len(inputs) != len(expectations):
-        err(err_msg)
+        error(err_msg)
         return [1, err_msg]
 
     reset_busvoodoo()
@@ -135,19 +135,20 @@ def selftest():
     bv_send(' ')
     output = '.'.join(bv_serial.readlines())
     if 'self-test succeeded' not in output:
-        err('self-test [s]')
+        error(str_s)
         tc_s.result = Error(output, 'error')
     else:
-        success('self-test [s]')
+        success(str_s)
 
     bv_send('self-test')
     bv_send(' ')
     output = '.'.join(bv_serial.readlines())
     if 'self-test succeeded' not in output:
-        err(output)
+        error(str_self_test)
         tc_selftest.result = Error(output, 'error')
     else:
         success(output)
+    return [tc_s, tc_selftest]
 
 def pinstest():
     print "TBC..."
@@ -175,6 +176,10 @@ for command in yaml["commands"]:
         testsuite.add_testcase(
             generic_input_test(input, expectation,
                 "{0} [{1}]".format(command, input)))
+
+#for testcase in selftest():
+#    testsuite.add_testcase(testcase)
+
 add_testsuite(testsuite)
 
 log('executing: default protocol tests')
