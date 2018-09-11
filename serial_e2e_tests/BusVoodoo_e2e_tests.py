@@ -21,13 +21,13 @@ def log(msg):
     print colored('[INFO] %s' % msg, 'yellow')
 
 def err(msg):
-    print  colored('[ERROR] %s' % msg, 'red')
+    print colored('[ERROR] %s' % msg, 'red')
 
 def failure(msg):
-    print  colored('[FAILURE] %s' % msg, 'red')
+    print colored('[FAILURE] %s' % msg, 'red')
 
 def success(msg):
-    print  colored('[SUCCESS] %s' % msg, 'green')
+    print colored('[SUCCESS] %s' % msg, 'green')
 
 def bv_send(msg):
     bv_serial.write(b'%s\r' % msg)
@@ -42,9 +42,9 @@ def write_xml_report(testsuites):
 	xml.write('busvoodoo_%s_testreport.xml' % 'date')
 
 def open_protocol(protocol):
-    bv_serial.write(b'm %s\r' % protocol)
+    bv_send('m %s' % protocol)
     for i in range(10):
-        bv_serial.write(b'\r')
+        bv_send('')
 
 def create_testsuite(name):
     log('executing %s' % name)
@@ -67,7 +67,7 @@ def generic_input_test(input, expectation, testname):
     tc = TestCase(testname)
     #flush buffer befor sending command
     bv_serial.readlines()
-    bv_serial.write(b'%s\r' % input)
+    bv_send(input)
     output = (bv_serial.readlines())
     output_stripped = ''.join(output)
 
@@ -98,7 +98,7 @@ def generic_inputs(inputs, expectations):
         result = generic_input(inputs[i], expectations[i])
         outputs += result[1]
         # fail fast
-        if  result[0] > 0:
+        if result[0] > 0:
             return [1, outputs]
     return [0, outputs]
 
@@ -126,21 +126,28 @@ def prot_default_settings_test(protocol):
     return tc
 
 def selftest():
-    bv_serial.write(b's\r')
-    bv_serial.write(b' \r')
-    result = bv_serial.readlines()
-    if 'self-test succeeded' not in '.'.join(result):
-        print "ERROR command s"
+    str_s = 'self-test [s]'
+    str_self_test = 'self-test [self-test]'
+    tc_s = TestCase(str_s)
+    tc_selftest = TestCase(str_self_test)
+
+    bv_send('s')
+    bv_send(' ')
+    output = '.'.join(bv_serial.readlines())
+    if 'self-test succeeded' not in output:
+        err('self-test [s]')
+        tc_s.result = Error(output, 'error')
     else:
-        print "SUCCESS command s"
-    # broken
-    bv_serial.write(b'self-test\r')
-    bv_serial.write(b' \r')
-    result = bv_serial.readlines()
-    if 'self-test succeeded' not in '.'.join(result):
-        print "ERROR command self-test"
+        success('self-test [s]')
+
+    bv_send('self-test')
+    bv_send(' ')
+    output = '.'.join(bv_serial.readlines())
+    if 'self-test succeeded' not in output:
+        err(output)
+        tc_selftest.result = Error(output, 'error')
     else:
-        print 'SUCCESS command self-test (s)'
+        success(output)
 
 def pinstest():
     print "TBC..."
