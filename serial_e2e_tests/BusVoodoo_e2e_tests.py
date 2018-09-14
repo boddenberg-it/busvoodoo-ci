@@ -1,20 +1,14 @@
 #!/usr/bin/python
-# deps: pip install pyserial junit-xml termcolor
+# deps: pip install pyserial junit-xml termcolor yaml
+import argparse
 import itertools
+import re
 import serial
 import time
 import yaml
-import re
 
 from junitparser import TestCase, TestSuite, JUnitXml, Skipped, Error, IntAttr, Attr
 from termcolor import colored
-
-# bv output is ansi colored, so we need to replace
-# these colored and XML invalid chars in order to put
-# the output in the JUnit XML report for Jenkins.
-ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-
-testsuites = []
 
 ### HELPER TO INCREASE READABILITY ###
 def log(msg):
@@ -29,15 +23,13 @@ def failure(msg):
 def success(msg):
     print colored('[SUCCESS] %s' % msg, 'green')
 
-def bv_send(msg):
-    bv_serial.write(b'%s\r' % msg)
-
+# JUnit XML report helper
 def add_testsuite(testsuite):
     testsuites.insert(len(testsuites), testsuite)
 
 def create_testsuite(name):
-    print colored('hallo', 'blue')
-    log('executing: %s' % name)
+    print
+    log('executing %s' % name)
     return TestSuite(name)
 
 def write_xml_report(testsuites):
@@ -46,17 +38,21 @@ def write_xml_report(testsuites):
 		xml.add_testsuite(testsuite)
 	xml.write('busvoodoo_%s_testreport.xml' % 'date')
 
+# bv serial commands helper
+def bv_send(msg):
+    bv_serial.write(b'%s\r' % msg)
+
+def reset_busvoodoo():
+    for i in range(10):
+        bv_send('')
+    bv_send('q')
+
 def open_protocol(protocol):
     bv_send('m %s' % protocol)
     for i in range(10):
         bv_send('')
 
-def create_testsuite(name):
-    print
-    log('executing %s' % name)
-    return TestSuite(name)
-
-### GENERIC TEST FUNCTIONS ###
+### GENERIC TEST FUNCTIONNS###
 def generic_input(input, expectation):
     #flush buffer befor sending command
     bv_serial.readlines()
@@ -73,6 +69,7 @@ def generic_input_test(input, expectation, testname):
     tc = TestCase(testname)
     #flush buffer befor sending command
     bv_serial.readlines()
+
     bv_send(input)
     output = (bv_serial.readlines())
     output_stripped = ''.join(output)
@@ -84,12 +81,6 @@ def generic_input_test(input, expectation, testname):
             return tc
     success(testname)
     return tc
-
-def reset_busvoodoo():
-    for i in range(10):
-        bv_send('')
-    bv_send('q')
-
 
 def generic_inputs(inputs, expectations):
     err_msg = ' generic_inputs(): inputs[] and expectations[] do not have equal length'
@@ -160,6 +151,38 @@ def pinstest():
     print "TBC..."
 
 ############### actual script #####################
+# argparse
+# so it could look like: BusVoodoo_e2e_tests.py --general_tests true --default_protocols_tests true --protocols_commands_test true
+description = 'This is a test program. It demonstrates how to use the argparse module with a program description.'
+parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description = description)
+parser.add_argument("-g", "--general_tests", action='store_true', help="Set to execute general tests")
+parser.add_argument("-p", "--protocol_command_tests", help="Execute commands test. Pass 'all' or comma separated string holding protocols 'spi,1-wire,uart'.")
+parser.add_argument("-c", "--protocol_combination_tests", help="Execute combination test. Pass 'all' or comma separated string holding protocols 'spi,1-wire,uart'.")
+parser.add_argument("-x", "--xml_report", help="Pass 'false' or path to disable report generation or specify absolute path (default is $PWD/busvoodoo_$(date)_test-report.xml)")
+parser.add_argument("-f", "--flavor", required=True, help="flavor of BusVoodoo under test (light,full)")
+parser.add_argument("-w", "--hardware_version", required=True, help="hardware version of BusVoodoo under test (v0,vA)")
+parser.add_argument("-s", "--serial_address", required=True, help="Path to BusVoodoo serial device e.g. '/dev/ttyACM0'")
+args = parser.parse_args()
+# ./BusVoodoo_e2e_tests.py -w v0 -f light -s /dev/ttyACM0 -g -p all -c all
+
+# bv output is ansi colored, so we need to replace
+# these colored and XML invalid chars in order to put
+# the output in the JUnit XML report for Jenkins.
+ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+print args.general_tests
+print args.protocol_command_tests
+print args.flavor
+print args.hardware_version
+
+sys.exit(2)
+
+# ... so all testsuites can add themselves after executing.
+testsuites = []
+
+
+# TODO: write help
 
 log('opening Busvoodoo configuration YAML file...')
 with open("BusVoodoo.yml", 'r') as stream:
@@ -173,28 +196,29 @@ bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
 
 reset_busvoodoo() # quit to HiZ mode
 
-#
+# GENERAL COMMANDS TESTS
 testsuite = create_testsuite('general commands tests')
 for command in yaml["commands"]:
     expectation = yaml["commands"][command]['expectation']
     for input in yaml["commands"][command]['input']:
         testsuite.add_testcase(
             generic_input_test(input, expectation,
+                # testname
                 "{0} [{1}]".format(command, input)))
-
+# special test cases of "general commands tests"
 for testcase in selftest():
     testsuite.add_testcase(testcase)
 #for testcase in pinstest():it
-#   testsuite.add_testcase(testcase) 
+#   testsuite.add_testcase(testcase)
 add_testsuite(testsuite)
 
-#
+# DEFAULT PROTOCOL TESTS
 testsuite = create_testsuite('default protocol tests')
 for protocol in yaml["protocols"]:
     testsuite.add_testcase(prot_default_settings_test(protocol))
 add_testsuite(testsuite)
 
-#
+# DEFAULT PROTOCOL COMMANDS TESTS
 testsuite = create_testsuite('spi commands tests')
 commands = yaml["protocols"]["spi"]["commands"]
 open_protocol('spi')
