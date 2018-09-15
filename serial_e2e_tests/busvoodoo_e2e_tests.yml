@@ -3,7 +3,7 @@
 #       quit, live in python script.
 
 commands:
-  # self-test and pins-test live in python script.
+  # 'self-test' and 'pins-test' and 'reset' live in python script.
   version:
     input: [ 'v', 'version' ]
     expectation: [ 'BusVoodoo flavor', 'firmware date', 'device ID' ]
@@ -28,6 +28,7 @@ commands:
 
 protocols:
   uart:
+    hardware_version: '0,A'
     commands:
     combinations:
       inputs:
@@ -46,8 +47,10 @@ protocols:
         - ['drive mode', 'push', 'external', 'embedded']
 
   i2c:
+    hardware_version: '0,A'
 
   spi:
+    hardware_version: '0,A'
     commands:
       # "[/]	select/deselect slave" is not tested
       10100: [ 'write: 0x74' ]
@@ -59,7 +62,6 @@ protocols:
       m: [ 'wait for 1 ms' ]
       m:42: [ 'wait for 42 ms' ]
       x: [ 'andre' ]
-
     combinations:
       inputs:
         - ['m spi']
@@ -79,5 +81,15 @@ protocols:
         - [ 'SPI:' ]
 
   1-wire:
+    hardware_version: '0,A'
     commands:
-    options:
+    combinations:
+      inputs:
+      expectations:
+
+  can:
+    hardware_version: 'A'
+    commands:
+    combinations:
+      inputs:
+      expectations:
