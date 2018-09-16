@@ -278,4 +278,7 @@ if args.protocol_combination_tests:
         add_testsuite(testsuite)
 
 log('writing xml report to file...')
-write_xml_report(testsuites)
+if args.xml_report:
+    write_xml_report(testsuites, args.xml_report)
+else:
+    write_xml_report(testsuites)
