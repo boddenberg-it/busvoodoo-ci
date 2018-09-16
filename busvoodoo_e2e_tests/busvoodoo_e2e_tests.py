@@ -252,8 +252,8 @@ if args.protocol_command_tests:
         open_protocol(protocol)
         for command in yaml["protocols"][protocol]["commands"]:
             expectation = yaml["protocols"][protocol]["commands"][command]
-            testsuite.add_testcase(generic_input_test('a %s' % command, expectation,
-                '{0} command test: a {1}'.format(protocol, command)))
+            testsuite.add_testcase(generic_input_test(command, expectation,
+                '{0} command test: {1}'.format(protocol, command)))
         add_testsuite(testsuite)
     softreset_busvoodoo()
 

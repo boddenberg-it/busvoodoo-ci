@@ -5,23 +5,23 @@
 commands:
   # 'self-test' and 'pins-test' and 'reset' live in python script.
   version:
-    input: [ 'v', 'version' ]
-    expectation: [ 'BusVoodoo flavor', 'firmware date', 'device ID' ]
+    input: ['v', 'version']
+    expectation: ['BusVoodoo flavor', 'firmware date', 'device ID']
   modes:
-    input: [ 'm', 'mode' ]
-    expectation: [ 'available modes', 'hiz']
+    input: ['m', 'mode']
+    expectation: ['available modes', 'hiz']
   help:
-    input: [ 'h', 'help' ]
-    expectation: [ 'available commands', 'bootloader', 'pinout' ]
+    input: ['h', 'help']
+    expectation: ['available commands', 'bootloader', 'pinout']
   pinout:
-    input: [ 'p', 'pinout' ]
-    expectation: [ 'I/O connector pinout:' ]
+    input: ['p', 'pinout']
+    expectation: ['I/O connector pinout:']
   power off:
-    input: [ 'P off', 'power off']
-    expectation: [ 'off', 'power rail' ]
+    input: ['P off', 'power off']
+    expectation: ['off', 'power rail']
   power on:
-    input: [ 'P on', 'power on']
-    expectation: [ '5V', '3V3', '5.', '3.' ]
+    input: ['P on', 'power on']
+    expectation: ['5V', '3V3', '5.', '3.']
   voltage:
     input: ['L', 'LV']
     expectation: ['external voltage input']
@@ -31,14 +31,14 @@ protocols:
     hardware_version: '0,A'
     commands:
       # "[/]	select/deselect slave" is not tested
-      10100: [ 'write: 0x74' ]
-      '0x3a': [ 'write: 0x3a' ]
-      '0b1': [ 'write: 0x01' ]
-      "'a'": [ 'write: 0x61' ]
-      r: [ 'read: 0x00' ]
-      u: [ 'wait for 1 us' ]
-      m: [ 'wait for 1 ms' ]
-      m:42: [ 'wait for 42 ms' ]
+      'a 10100': ['write: 0x74']
+      'a 0x3a': ['write: 0x3a']
+      'a 0b1': ['write: 0x01']
+      "a 'a'": ['write: 0x61']
+      'a r': ['read: 0x00']
+      'a u': ['wait for 1 us']
+      'a m': ['wait for 1 ms']
+      'a m:42': ['wait for 42 ms']
     combinations:
       inputs:
         - [1, 2]
@@ -58,58 +58,55 @@ protocols:
   i2c:
     hardware_version: '0,A'
     commands:
-      # "[/]	select/deselect slave" is not tested
-      10100: [ 'write: 0x74' ]
-      '0x3a': [ 'write: 0x3a' ]
-      '0b1': [ 'write: 0x01' ]
-      "'a'": [ 'write: 0x61' ]
-      r: [ 'read: 0x00' ]
-      u: [ 'wait for 1 us' ]
-      m: [ 'wait for 1 ms' ]
-      m:42: [ 'wait for 42 ms' ]
+      'a 10100': ['write: 0x74']
+      'a 0x3a': ['write: 0x3a']
+      'a 0b1': ['write: 0x01']
+      "a 'a'": ['write: 0x61']
+      'a r': ['read: 0x00']
+      'a u': ['wait for 1 us']
+      'a m': ['wait for 1 ms']
+      'a m:42': ['wait for 42 ms']
 
   spi:
     hardware_version: '0,A'
     commands:
-      # "[/]	select/deselect slave" is not tested
-      10100: [ 'write: 0x74' ]
-      '0x3a': [ 'write: 0x3a' ]
-      '0b1': [ 'write: 0x01' ]
-      "'a'": [ 'write: 0x61' ]
-      r: [ 'read: 0x00' ]
-      u: [ 'wait for 1 us' ]
-      m: [ 'wait for 1 ms' ]
-      m:42: [ 'wait for 42 ms' ]
+      'a 10100': ['write: 0x74']
+      'a 0x3a': ['write: 0x3a']
+      'a 0b1': ['write: 0x01']
+      "a 'a'": ['write: 0x61']
+      'a r': ['read: 0x00']
+      'a u': ['wait for 1 us']
+      'a m': ['wait for 1 ms']
+      'a m:42': ['wait for 42 ms']
     combinations:
       inputs:
         - ['m spi']
         - ['1', '2']
-        - ['1', '2', '3', '4', '5', '6', '7', '8' ]
+        - ['1', '2', '3', '4', '5', '6', '7', '8']
         - ['8', '16']
         - ['1', '2']
         - ['1', '2', '3', '4']
         - ['1', '2', '3']
       expectations:
-        - [ 'duplex mode', 'full-duplex', 'bidirectional']
-        - [ '18000 kHz', '1125 kHz', '140 kHz' ]
-        - [ 'data frame width in bits' ] # has no output line...
-        - [ 'most significant', 'least significant' ]
-        - [ 'mode', '0', '3' ]
-        - [ 'push', 'external', 'embedded']
-        - [ 'SPI:' ]
+        - ['duplex mode', 'full-duplex', 'bidirectional']
+        - ['18000 kHz', '1125 kHz', '140 kHz']
+        - ['data frame width in bits'].
+        - ['most significant', 'least significant']
+        - ['mode', '0', '3']
+        - ['push', 'external', 'embedded']
+        - ['SPI:']
 
   1-wire:
     hardware_version: '0,A'
     commands:
-      # "[/]	select/deselect slave" is not tested
-      10100: [ 'write: 0x74' ]
-      '0x3a': [ 'write: 0x3a' ]
-      '0b1': [ 'write: 0x01' ]
-      "'a'": [ 'write: 0x61' ]
-      r: [ 'read: 0x00' ]
-      u: [ 'wait for 1 us' ]
-      m: [ 'wait for 1 ms' ]
-      m:42: [ 'wait for 42 ms' ]
+      'a 10100': ['write: 0x74']
+      'a 0x3a': ['write: 0x3a']
+      'a 0b1': ['write: 0x01']
+      "a 'a'": ['write: 0x61']
+      'a r': ['read: 0x00']
+      'a u': ['wait for 1 us']
+      'a m': ['wait for 1 ms']
+      'a m:42': ['wait for 42 ms']
     combinations:
       inputs:
       expectations:
@@ -117,15 +114,14 @@ protocols:
   can:
     hardware_version: 'A'
     commands:
-      # "[/]	select/deselect slave" is not tested
-      10100: [ 'write: 0x74' ]
-      '0x3a': [ 'write: 0x3a' ]
-      '0b1': [ 'write: 0x01' ]
-      "'a'": [ 'write: 0x61' ]
-      r: [ 'read: 0x00' ]
-      u: [ 'wait for 1 us' ]
-      m: [ 'wait for 1 ms' ]
-      m:42: [ 'wait for 42 ms' ]
+      'a 10100': ['write: 0x74']
+      'a 0x3a': ['write: 0x3a']
+      'a 0b1': ['write: 0x01']
+      "a 'a'": ['write: 0x61']
+      'a r': ['read: 0x00']
+      'a u': ['wait for 1 us']
+      'a m': ['wait for 1 ms']
+      'a m:42': ['wait for 42 ms']
     combinations:
       inputs:
       expectations:
