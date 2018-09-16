@@ -98,7 +98,10 @@ def generic_inputs(inputs, expectations):
 def get_protocols_based_on_hw_verison(protocols):
     # only one protocol specified
     if protocols != 'all' and ',' not in protocols:
-        return [protocols]
+        if args.hardware_version in yaml["protocols"][protocols]["hardware_version"].split(','):
+            return [protocols]
+        error('protocol not supported for used hardware version')
+        return
     # used for default choices
     if protocols == 'all':
         protocols = yaml["protocols"]
@@ -247,15 +250,17 @@ if args.default_protocols_test:
 
 # DEFAULT PROTOCOLS COMMANDS TESTS
 if args.protocol_command_tests:
-    for protocol in get_protocols_based_on_hw_verison(args.protocol_command_tests):
-        testsuite = create_testsuite('%s commands tests' % protocol)
-        open_protocol(protocol)
-        for command in yaml["protocols"][protocol]["commands"]:
-            expectation = yaml["protocols"][protocol]["commands"][command]
-            testsuite.add_testcase(generic_input_test(command, expectation,
-                '{0} command test: {1}'.format(protocol, command)))
-        add_testsuite(testsuite)
-    softreset_busvoodoo()
+    protocols = get_protocols_based_on_hw_verison(args.protocol_command_tests)
+    if protocols:
+        for protocol in protocols:
+            testsuite = create_testsuite('%s commands tests' % protocol)
+            open_protocol(protocol)
+            for command in yaml["protocols"][protocol]["commands"]:
+                expectation = yaml["protocols"][protocol]["commands"][command]
+                testsuite.add_testcase(generic_input_test(command, expectation,
+                    '{0} command test: {1}'.format(protocol, command)))
+                add_testsuite(testsuite)
+        softreset_busvoodoo()
 
 # PROTOCOL COMBINATION TESTS
 if args.protocol_combination_tests:
