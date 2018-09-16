@@ -97,10 +97,10 @@ def generic_inputs(inputs, expectations):
 
 def get_protocols_based_on_hw_verison(protocols):
     # only one protocol specified
-    if protocols is not 'all' and ',' not in protocols:
+    if protocols != 'all' and ',' not in protocols:
         return [protocols]
     # used for default choices
-    if protocols is 'all':
+    if protocols == 'all':
         protocols = yaml["protocols"]
     # comma-separated list of protocols
     elif ',' in protocols:
@@ -202,7 +202,7 @@ if generic_input('v', ['hardware version: %s' % args.hardware_version])[0] > 0:
     error("passed HW_VERSION does NOT match device HW_VERSION!")
     sys.exit(1)
 
-if args.testboard:
+if args .testboard:
     log('...init serial connection to testboard...')
     tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
 

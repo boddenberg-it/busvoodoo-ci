@@ -30,6 +30,15 @@ protocols:
   uart:
     hardware_version: '0,A'
     commands:
+      # "[/]	select/deselect slave" is not tested
+      10100: [ 'write: 0x74' ]
+      '0x3a': [ 'write: 0x3a' ]
+      '0b1': [ 'write: 0x01' ]
+      "'a'": [ 'write: 0x61' ]
+      r: [ 'read: 0x00' ]
+      u: [ 'wait for 1 us' ]
+      m: [ 'wait for 1 ms' ]
+      m:42: [ 'wait for 42 ms' ]
     combinations:
       inputs:
         - [1, 2]
@@ -48,6 +57,16 @@ protocols:
 
   i2c:
     hardware_version: '0,A'
+    commands:
+      # "[/]	select/deselect slave" is not tested
+      10100: [ 'write: 0x74' ]
+      '0x3a': [ 'write: 0x3a' ]
+      '0b1': [ 'write: 0x01' ]
+      "'a'": [ 'write: 0x61' ]
+      r: [ 'read: 0x00' ]
+      u: [ 'wait for 1 us' ]
+      m: [ 'wait for 1 ms' ]
+      m:42: [ 'wait for 42 ms' ]
 
   spi:
     hardware_version: '0,A'
@@ -61,7 +80,6 @@ protocols:
       u: [ 'wait for 1 us' ]
       m: [ 'wait for 1 ms' ]
       m:42: [ 'wait for 42 ms' ]
-      x: [ 'andre' ]
     combinations:
       inputs:
         - ['m spi']
@@ -83,6 +101,15 @@ protocols:
   1-wire:
     hardware_version: '0,A'
     commands:
+      # "[/]	select/deselect slave" is not tested
+      10100: [ 'write: 0x74' ]
+      '0x3a': [ 'write: 0x3a' ]
+      '0b1': [ 'write: 0x01' ]
+      "'a'": [ 'write: 0x61' ]
+      r: [ 'read: 0x00' ]
+      u: [ 'wait for 1 us' ]
+      m: [ 'wait for 1 ms' ]
+      m:42: [ 'wait for 42 ms' ]
     combinations:
       inputs:
       expectations:
@@ -90,6 +117,15 @@ protocols:
   can:
     hardware_version: 'A'
     commands:
+      # "[/]	select/deselect slave" is not tested
+      10100: [ 'write: 0x74' ]
+      '0x3a': [ 'write: 0x3a' ]
+      '0b1': [ 'write: 0x01' ]
+      "'a'": [ 'write: 0x61' ]
+      r: [ 'read: 0x00' ]
+      u: [ 'wait for 1 us' ]
+      m: [ 'wait for 1 ms' ]
+      m:42: [ 'wait for 42 ms' ]
     combinations:
       inputs:
       expectations:
