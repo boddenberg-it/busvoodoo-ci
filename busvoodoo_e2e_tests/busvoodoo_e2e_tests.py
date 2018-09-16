@@ -282,8 +282,11 @@ if args.protocol_combination_tests:
 
         add_testsuite(testsuite)
 
-log('writing xml report to file...')
-if args.xml_report:
-    write_xml_report(testsuites, args.xml_report)
+if len(testsuites) > 0:
+    log('writing xml report to file...')
+    if args.xml_report:
+        write_xml_report(testsuites, args.xml_report)
+    else:
+        write_xml_report(testsuites)
 else:
-    write_xml_report(testsuites)
+    log('no testsuites found to be reported to XML')
