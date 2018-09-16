@@ -90,7 +90,7 @@ protocols:
       expectations:
         - ['duplex mode', 'full-duplex', 'bidirectional']
         - ['18000 kHz', '1125 kHz', '140 kHz']
-        - ['data frame width in bits'].
+        - ['data frame width in bits']
         - ['most significant', 'least significant']
         - ['mode', '0', '3']
         - ['push', 'external', 'embedded']
