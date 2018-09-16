@@ -20,7 +20,7 @@ fi
 if [[ "$1" = "flash" && ! -z "$2" ]]; then
 	dfu-util --device "${DEVICE_ID}" --download "$2_${DEVICE_VERSION}_application.bin"
 	sleep $TIMEOUT_FOR_BV_REBOOT
-	if [ $(lsusb | grep "${DEVICE_ID} InterBiometrics" | wc -l) = 1 ]; then
+	if [ "$(lsusb | grep -c "${DEVICE_ID} InterBiometrics")" = 1 ]; then
 		exit 0
 	else
 		exit 1
