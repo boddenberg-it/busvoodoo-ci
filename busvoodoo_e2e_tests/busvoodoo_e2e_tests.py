@@ -1,292 +1,360 @@
 #!/usr/bin/python
-# deps: pip install pyserial junit-xml termcolor yaml
+"""  is this the doc string"""
+# deps: pip install pyserial junit-xml termcolor YAML
 import argparse
 import datetime
 import itertools
 import re
-import serial
 import sys
+import serial
 import yaml
 
-from junitparser import TestCase, TestSuite, JUnitXml, Skipped, Error, IntAttr, Attr
 from termcolor import colored
+from junitparser import TestCase, TestSuite, JUnitXml, Error
 
 ### HELPER TO INCREASE READABILITY ###
+
+
 def log(msg):
+    """tbc..."""
     print colored('[INFO] %s' % msg, 'yellow')
 
+
 def error(msg):
+    """tbc..."""
     print colored('[ERROR] %s' % msg, 'red')
 
+
 def failure(msg):
+    """tbc..."""
     print colored('[FAILURE] %s' % msg, 'red')
 
+
 def success(msg):
+    """tbc..."""
     print colored('[SUCCESS] %s' % msg, 'green')
 
 # JUnit XML report helper
-def add_testsuite(testsuite):
-    testsuites.insert(len(testsuites), testsuite)
 
-def create_testsuite(name):
+
+def add_testsuite(passed_testsuite):
+    """tbc..."""
+    TESTSUITES.insert(len(TESTSUITES), passed_testsuite)
+
+
+def create_testsuite(passed_name):
+    """tbc..."""
     print
-    log('executing %s' % name)
-    return TestSuite(name)
+    log('executing %s' % passed_name)
+    return TestSuite(passed_name)
 
-def write_xml_report(testsuites, name='busvoodoo_e2e_%s_testreport.xml' % datetime.datetime.now().strftime("%Y-%m-%d_%H:%m")):
-	xml = JUnitXml()
-	for testsuite in testsuites:
-		xml.add_testsuite(testsuite)
-	xml.write(name)
+
+def get_date():
+    """tbc..."""
+    return datetime.datetime.now().strftime("%Y-%m-%d_%H:%m")
+
+
+def write_xml_report(testsuites, test_name=''):
+    """tbc..."""
+    if test_name == '':
+        test_name = 'busvoodoo_e2e_%s_testreport.xml' % get_date()
+
+    xml = JUnitXml()
+    for test_suite in testsuites:
+        xml.add_testsuite(test_suite)
+    xml.write(test_name)
 
 # bv serial commands helper
+
+
 def bv_send(msg):
-    bv_serial.write(b'%s\r' % msg)
+    """tbc..."""
+    BV_SERIAL.write(b'%s\r' % msg)
+
 
 def softreset_busvoodoo():
+    """tbc..."""
     log('soft-resetting BusVoodoo via \'reset\' command')
     # end potential protocol config sequence
-    for i in range(10):
+    for _ in range(10):
         bv_send('')
     # quit to HiZ mode
     bv_send('q')
 
-def open_protocol(protocol):
-    bv_send('m %s' % protocol)
-    for i in range(10):
+
+def open_protocol(i_protocol):
+    """tbc..."""
+    bv_send('m %s' % i_protocol)
+    for _ in range(10):
         bv_send('')
 
 ### GENERIC TEST FUNCTIONNS###
-def generic_input(input, expectation):
-    #flush buffer before sending command
-    bv_serial.readlines()
 
-    bv_send(input)
-    output = ''.join(bv_serial.readlines())
 
-    for e in expectation:
-        if e is not '' and e not in output:
+def generic_input(passed_input, i_expectation):
+    """tbc..."""
+    # flush buffer before sending command
+    BV_SERIAL.readlines()
+
+    bv_send(passed_input)
+    output = ''.join(BV_SERIAL.readlines())
+
+    for exp in i_expectation:
+        if exp != '' and exp not in output:
             return [1, output]
     return [0, output]
 
-def generic_input_test(input, expectation, testname):
-    tc = TestCase(testname)
-    result = generic_input(input, expectation)
-    if result[0] > 0:
-            tc.result = Error(ansi_escape.sub('', result[1]), 'error')
-            failure(testname)
-            return tc
-    success(testname)
-    return tc
 
-def generic_inputs(inputs, expectations):
+def generic_input_test(i_input, i_expectation, testname):
+    """tbc..."""
+    i_testcase = TestCase(testname)
+    i_result = generic_input(i_input, i_expectation)
+    if i_result[0] > 0:
+        test_case.result = Error(ANSI_ESCAPE.sub('', i_result[1]), 'error')
+        failure(testname)
+        return i_testcase
+    success(testname)
+    return i_testcase
+
+
+def generic_inputs(i_inputs, i_expectations):
+    """tbc..."""
     err_msg = ' generic_inputs(): inputs[] and expectations[] do not have equal length'
-    if len(inputs) != len(expectations):
+    if len(i_inputs) != len(i_expectations):
         error(err_msg)
         return [1, err_msg]
 
     outputs = ''
 
-    for i in range(len(inputs)):
-        result = generic_input(inputs[i], expectations[i])
-        outputs += result[1]
+    for i_input, i_expectation in i_inputs, i_expectations:
+        i_result = generic_input(i_input, i_expectation)
+        outputs += i_result[1]
         # fail fast
-        if result[0] > 0:
+        if i_result[0] > 0:
             return [1, outputs]
     return [0, outputs]
 
-def get_protocols_based_on_hw_verison(protocols):
+
+def get_protocols(i_protocols):
+    """tbc..."""
     # only one protocol specified
-    if protocols != 'all' and ',' not in protocols:
-        if args.hardware_version in yaml["protocols"][protocols]["hardware_version"].split(','):
-            return [protocols]
+    if i_protocols != 'all' and ',' not in i_protocols:
+        if ARGS.hardware_version in YAML["protocols"][i_protocols]["hardware_version"].split(','):
+            return [i_protocols]
         error('protocol not supported for used hardware version')
-        return
+        return [None]
     # used for default choices
-    if protocols == 'all':
-        protocols = yaml["protocols"]
+    if i_protocols == 'all':
+        i_protocols = YAML["protocols"]
     # comma-separated list of protocols
-    elif ',' in protocols:
-        protocols = args.protocol_command_tests.split(',')
+    elif ',' in i_protocols:
+        i_protocols = ARGS.protocol_command_tests.split(',')
 
     supported_protocols = []
-    for protocol in protocols:
-        supported_versions = yaml["protocols"][protocol]['hardware_version'].split(',')
-        if args.hardware_version in supported_versions:
-            supported_protocols.insert(len(supported_protocols),protocol)
+    for i_protocol in i_protocols:
+        supported_versions = YAML["protocols"][i_protocols]['hardware_version'].split(
+            ',')
+        if ARGS.hardware_version in supported_versions:
+            supported_protocols.insert(len(supported_protocols), i_protocol)
     return supported_protocols
 
-### TEST SPECIIC FUNCTIONS
-def prot_default_settings_test(protocol):
-    #
-    tc = TestCase('default protocol test: %s' % protocol)
-    open_protocol(protocol)
-    result = bv_serial.readlines()
+# TEST SPECIIC FUNCTIONS
+
+
+def prot_default_settings_test(i_protocol):
+    """tbc..."""
+    i_testcase = TestCase('default protocol test: %s' % i_protocol)
+    open_protocol(i_protocol)
+    i_result = BV_SERIAL.readlines()
     # add why we are doing this...
-    if str.lower(protocol) not in str.lower(result[len(result)-1]):
-        tc.result = Error(ansi_escape.sub('',''.join(result)), 'error')
-        failure('default protocol %s test' % protocol)
-        return tc
+    if str.lower(i_protocol) not in str.lower(i_result[len(i_result)-1]):
+        i_testcase.result = Error(
+            ANSI_ESCAPE.sub('', ''.join(i_result)), 'error')
+        failure('default protocol %s test' % i_protocol)
+        return i_testcase
     #
-    bv_serial.write(b'q\r')
-    result = bv_serial.readlines()
+    BV_SERIAL.write(b'q\r')
+    i_result = BV_SERIAL.readlines()
     #
-    if 'HiZ:' not in result[1]:
-        tc.result = Error(ansi_escape.sub('',''.join(result)), 'error')
-        failure('default protocol %s test' % protocol)
-        return tc
+    if 'HiZ:' not in i_result[1]:
+        i_testcase.result = Error(
+            ANSI_ESCAPE.sub('', ''.join(i_result)), 'error')
+        failure('default protocol %s test' % i_protocol)
+        return i_testcase
     #
-    success('default protocol %s test' % protocol)
-    return tc
+    success('default protocol %s test' % i_protocol)
+    return i_testcase
+
 
 def selftest():
+    """tbc..."""
     str_s = 'self-test [s]'
     str_self_test = 'self-test [self-test]'
-    tc_s = TestCase(str_s)
-    tc_selftest = TestCase(str_self_test)
+    test_case_s = TestCase(str_s)
+    test_case_selftest = TestCase(str_self_test)
 
     bv_send('s')
     bv_send(' ')
-    output = '.'.join(bv_serial.readlines())
+    output = '.'.join(BV_SERIAL.readlines())
     if 'self-test succeeded' not in output:
         error(str_s)
-        tc_s.result = Error(ansi_escape.sub('', output), 'error')
+        test_case_s.result = Error(ANSI_ESCAPE.sub('', output), 'error')
     else:
         success(str_s)
 
     bv_send('self-test')
     bv_send(' ')
-    output = '.'.join(bv_serial.readlines())
+    output = '.'.join(BV_SERIAL.readlines())
     if 'self-test succeeded' not in output:
         error(str_self_test)
-        tc_selftest.result = Error(ansi_escape.sub('', output), 'error')
+        test_case_selftest.result = Error(ANSI_ESCAPE.sub('', output), 'error')
     else:
         success(output)
-    return [tc_s, tc_selftest]
+    return [test_case_s, test_case_selftest]
+
 
 def pinstest():
+    """Runs the pins-test BV command via analog multiplexer on testboard"""
     print "TBC..."
+
 
 ############### actual script #####################
 # bv output is ansi colored, so we need to replace
 # these colored and XML invalid chars in order to put
 # the output in the JUnit XML report for Jenkins.
-ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 # ... so all testsuites can add themselves after executing.
-testsuites = []
+TESTSUITES = []
 
-description = 'This is a test program. It demonstrates how to use the argparse module with a program description.'
-parser = argparse.ArgumentParser()
-parser = argparse.ArgumentParser(description = description)
-parser.add_argument("-W", "--hardware_version", required=True, help="hardware version of BusVoodoo under test (v0,vA)")
-# TODO: Ask whether the flavor is important for testing?
-#parser.add_argument("-F", "--flavor", required=True, help="flavor of BusVoodoo under test (light,full)")
-parser.add_argument("-S", "--serial_address", required=True, help="Path to BusVoodoo serial device e.g. '/dev/ttyACM0'")
-parser.add_argument("-t", "--testboard_address", help="Set serial address of BusVoodoo testboard to run all general tests.")
-parser.add_argument("-g", "--general_tests", action='store_true', help="Set to execute general tests")
-parser.add_argument("-d", "--default_protocols_test", action='store_true', help="Testsuite which opens every protocol mode supported by passed 'hardware_version'")
-parser.add_argument("-p", "--protocol_command_tests", help="Execute commands test. Pass 'all' or comma separated string holding protocols 'spi,1-wire,uart'.")
-parser.add_argument("-c", "--protocol_combination_tests", help="Execute combination test. Pass 'all' or comma separated string holding protocols 'spi,1-wire,uart'.")
-parser.add_argument("-x", "--xml_report", help="Pass 'false' or path to disable report generation or specify absolute path (default is $PWD/busvoodoo_$(date)_test-report.xml)")
-args = parser.parse_args()
+DESCRIPTION = """This is a test program. It demonstrates how to use the
+    argparse module with a program description."""
+
+PARSER = argparse.ArgumentParser()
+PARSER = argparse.ArgumentParser(description=DESCRIPTION)
+PARSER.add_argument("-W", "--hardware_version", required=True,
+                    help="hardware version of BusVoodoo under test (v0,vA)")
+# TD: Ask whether the flavor is important for testing?
+#PARSER.add_argument("-F", "--flavor", required=True, help="""flavor of
+#    BusVoodoo under test (light,full)""")
+PARSER.add_argument("-S", "--serial_address", required=True, help="""Path to
+    BusVoodoo serial device e.g. '/dev/ttyACM0'""")
+PARSER.add_argument("-t", "--testboard_address", help="""Set serial address of
+    BusVoodoo testboard to run all general tests.""")
+PARSER.add_argument("-g", "--general_tests",
+                    action='store_true', help="Set to execute general tests")
+PARSER.add_argument("-d", "--default_protocols_test", action='store_true',
+                    help="""Testsuite which opens every protocol mode
+                    supported by passed 'hardware_version""")
+PARSER.add_argument("-p", "--protocol_command_tests", help="""Execute commands
+    test. Pass 'all' or comma separated string holding protocols
+    'spi,1-wire,uart'.""")
+PARSER.add_argument("-c", "--protocol_combination_tests", help="""Execute
+    combination test. Pass 'all' or comma separated string holding protocols
+    'spi,1-wire,uart'.""")
+PARSER.add_argument("-x", "--xml_report", help="""Pass 'false' or path to
+    disable report generation or specify absolute path
+    (default is $PWD/busvoodoo_$(date)_test-report.xml)""")
+ARGS = PARSER.parse_args()
 
 # INIT & SANITY
 log('opening Busvoodoo configuration YAML file...')
 with open("busvoodoo_e2e_tests.yml", 'r') as stream:
-    yaml = yaml.load(stream)
+    YAML = yaml.load(stream)
 
 try:
     log('init serial connection to BusVoodoo...')
-    bv_serial = serial.Serial(args.serial_address, timeout=1)
-    softreset_busvoodoo() # clean start
-except:
+    BV_SERIAL = serial.Serial(ARGS.serial_address, timeout=1)
+    softreset_busvoodoo()  # clean start
+except serial.serialutil.SerialException:
     error("serial connection to busvoodoo could NOT been established!")
     sys.exit(1)
 
 log('verifying passed HW_VERSION with device HW_VERSION')
-if generic_input('v', ['hardware version: %s' % args.hardware_version])[0] > 0:
-    error("passed HW_VERSION does NOT match device HW_VERSION!")
+if generic_input('v', ['hardware version: %s' % ARGS.hardware_version])[0] > 0:
+    error("passed HW_VERSION does NOT matest_caseh device HW_VERSION!")
     sys.exit(1)
 
-if args.testboard_address:
+if ARGS.testboard_address:
     try:
         log('init serial connection to testboard...')
-        tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
-    except:
+        TB_SERIAL = serial.Serial('/dev/ttyACM1', timeout=1)
+    except serial.serialutil.SerialException:
         error("serial connection to testboard could NOT been established!")
         sys.exit(1)
-    # TODO: introduce check that it's the testboard
+    # TD: introduce check that it's the testboard
 
 # GENERAL COMMANDS TESTS
-if args.general_tests:
-    # test cases which lives in yaml
-    testsuite = create_testsuite('general commands tests')
-    for command in yaml["commands"]:
-        expectation = yaml["commands"][command]['expectation']
-        for input in yaml["commands"][command]['input']:
-            testsuite.add_testcase(
-                generic_input_test(input, expectation,
-                    # passing a testname for XML report readability
-                    "{0} [{1}]".format(command, input)))
+if ARGS.general_tests:
+    # test cases which lives in YAML
+    TESTSUITE = create_testsuite('general commands tests')
+    for command in YAML["commands"]:
+        expectation = YAML["commands"][command]['expectation']
+        for inner_input in YAML["commands"][command]['input']:
+            name = '{0} [{1}]'.format(command, inner_input)
+            TESTSUITE.add_testcase(
+                generic_input_test(inner_input, expectation, name))
 
     # special test cases (too 'complex' for YAML config)
-    for testcase in selftest():
-        testsuite.add_testcase(testcase)
+    for testest_casease in selftest():
+        TESTSUITE.add_testcase(testest_casease)
 
     # special test cases which needs testboard
-    if args.testboard_address:
+    if ARGS.testboard_address:
         print 'tbc'
-        #for testcase in pinstest():
-        #testsuite.add_testcase(testcase)
-    add_testsuite(testsuite)
+        # for testest_casease in pinstest():
+        # testsuite.add_testest_casease(testest_casease)
+    add_testsuite(TESTSUITE)
 
 # DEFAULT PROTOCOLS TESTS
-if args.default_protocols_test:
-    testsuite = create_testsuite('default protocols tests')
-    for protocol in get_protocols_based_on_hw_verison('all'):
-            testsuite.add_testcase(prot_default_settings_test(protocol))
-    add_testsuite(testsuite)
+if ARGS.default_protocols_test:
+    TESTSUITE = create_testsuite('default protocols tests')
+    for protocol in get_protocols('all'):
+        TESTSUITE.add_testcase(prot_default_settings_test(protocol))
+    add_testsuite(TESTSUITE)
 
 # DEFAULT PROTOCOLS COMMANDS TESTS
-if args.protocol_command_tests:
-    protocols = get_protocols_based_on_hw_verison(args.protocol_command_tests)
-    if protocols:
-        for protocol in protocols:
+if ARGS.protocol_command_tests:
+    PROTOCOLS = get_protocols(ARGS.protocol_command_tests)
+    if PROTOCOLS and PROTOCOLS[0] != None:
+        for protocol in PROTOCOLS:
             testsuite = create_testsuite('%s commands tests' % protocol)
             open_protocol(protocol)
-            for command in yaml["protocols"][protocol]["commands"]:
-                expectation = yaml["protocols"][protocol]["commands"][command]
-                testsuite.add_testcase(generic_input_test(command, expectation,
-                    '{0} command test: {1}'.format(protocol, command)))
+            for command in YAML["protocols"][protocol]["commands"]:
+                expectation = YAML["protocols"][protocol]["commands"][command]
+                name = '{0} command test: {1}'.format(protocol, command)
+                testsuite.add_testcase(
+                    generic_input_test(command, expectation, name))
                 add_testsuite(testsuite)
         softreset_busvoodoo()
 
 # PROTOCOL COMBINATION TESTS
-if args.protocol_combination_tests:
-    for protocol in get_protocols_based_on_hw_verison(args.protocol_combination_tests):
-        inputs = yaml["protocols"][protocol]["combinations"]["inputs"]
-        expectations = yaml["protocols"][protocol]["combinations"]["expectations"]
-        testsuite = create_testsuite('%s_configuration_combinations_tests' % protocol)
+if ARGS.protocol_combination_tests:
+    for protocol in get_protocols(ARGS.protocol_combination_tests):
+        inputs = YAML["protocols"][protocol]["combinations"]["inputs"]
+        expectations = YAML["protocols"][protocol]["combinations"]["expectations"]
+        testsuite = create_testsuite(
+            '%s_configuration_combinations_tests' % protocol)
 
         for permutation in list(itertools.product(*inputs)):
-            name = '{0}_combination-test_{1}'.format(protocol, '-'.join(permutation))
-            tc = TestCase(name)
+            name = '{0}_combination-test_{1}'.format(
+                protocol, '-'.join(permutation))
+            test_case = TestCase(name)
             result = generic_inputs(permutation, expectations)
             if result[0] > 0:
-                tc.Result = Error(result[1], 'error')
+                test_case.Result = Error(result[1], 'error')
                 failure(name)
             else:
                 success(name)
-            testsuite.add_testcase(tc)
+            testsuite.add_testest_casease(test_case)
 
         add_testsuite(testsuite)
 
-if len(testsuites) > 0:
+if TESTSUITES:
     log('writing xml report to file...')
-    if args.xml_report:
-        write_xml_report(testsuites, args.xml_report)
+    if ARGS.xml_report:
+        write_xml_report(TESTSUITES, ARGS.xml_report)
     else:
-        write_xml_report(testsuites)
+        write_xml_report(TESTSUITES)
 else:
     log('no testsuites found to be reported to XML')
