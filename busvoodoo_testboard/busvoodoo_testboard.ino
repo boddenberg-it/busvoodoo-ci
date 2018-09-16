@@ -2,7 +2,10 @@
   USED BOARD: Arduino Nano
   MAINTAINER: andre@boddenberg.it
 
-*/// PINS
+
+*/
+char version = '0.1'
+// PINS
 // multiplexer (MP)
 int MP_VCC = 2; // D2
 int MP_EN = 3; // D3
@@ -27,7 +30,7 @@ void setup() {
   pinMode(MP_S2, OUTPUT);
   pinMode(MP_S3, OUTPUT);
   pinMode(MP_EN, OUTPUT);
-  pinMode(MP_VCC, OUTPUT);
+  pinMode(MP_VCC, INPUT);
   pinMode(BV_DFU_MODE, OUTPUT);
   pinMode(RESET_BUSVOODOO, OUTPUT);
   pinMode(RESET_FLASHBOARD, OUTPUT);
@@ -39,7 +42,6 @@ void setup() {
   digitalWrite(MP_S2, LOW);
   digitalWrite(MP_S3, LOW);
   digitalWrite(MP_EN, LOW);
-  digitalWrite(MP_VCC, LOW);
   digitalWrite(BV_DFU_MODE, LOW);
   digitalWrite(RESET_BUSVOODOO, LOW);
   digitalWrite(RESET_FLASHBOARD, LOW);
@@ -78,6 +80,9 @@ void loop() {
         } break;
       case 'd': {
           disable_multiplexer();
+        } break;
+      case 'v': {
+          send_version();
         } break;
       default:
         error("command not found");
@@ -149,13 +154,16 @@ void reset(char device) {
 }
 
 void disable_multiplexer() {
-  digitalWrite(MP_VCC, LOW);
   digitalWrite(MP_EN, LOW);
   digitalWrite(MP_S0, LOW);
   digitalWrite(MP_S1, LOW);
   digitalWrite(MP_S2, LOW);
   digitalWrite(MP_S3, LOW);
   ack("disable_multiplexer()");
+}
+
+void send_version() {
+  ack("BusVoodoo testboard v" + version)
 }
 
 /* takes number [0,15] and uses
@@ -165,7 +173,7 @@ void disable_multiplexer() {
 void set_multiplexer(char c0, char c1, char c2, char c3) {
 
   // disable multiplexer
-  digitalWrite(MP_EN, LOW);
+  digitalWrite(MP_EN, HIGH);
   delay(500);
 
   // set multiplexer
@@ -190,11 +198,7 @@ void set_multiplexer(char c0, char c1, char c2, char c3) {
     digitalWrite(MP_S3, LOW);
   }
 
-  // enable and power cycle multplexer
-  // (in case it has been disabled prevously)
-  digitalWrite(MP_EN, HIGH);
-  digitalWrite(MP_VCC, HIGH);
-
+  digitalWrite(MP_EN, LOW);
   ack("set_multiplexer()");
 }
 
