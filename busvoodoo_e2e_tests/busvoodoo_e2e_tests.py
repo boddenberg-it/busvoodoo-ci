@@ -13,34 +13,26 @@ from termcolor import colored
 from junitparser import TestCase, TestSuite, JUnitXml, Error
 
 ### HELPER TO INCREASE READABILITY ###
-
-
 def log(msg):
     """tbc..."""
     print colored('[INFO] %s' % msg, 'yellow')
-
 
 def error(msg):
     """tbc..."""
     print colored('[ERROR] %s' % msg, 'red')
 
-
 def failure(msg):
     """tbc..."""
     print colored('[FAILURE] %s' % msg, 'red')
-
 
 def success(msg):
     """tbc..."""
     print colored('[SUCCESS] %s' % msg, 'green')
 
 # JUnit XML report helper
-
-
 def add_testsuite(passed_testsuite):
     """tbc..."""
     TESTSUITES.insert(len(TESTSUITES), passed_testsuite)
-
 
 def create_testsuite(passed_name):
     """tbc..."""
@@ -48,11 +40,9 @@ def create_testsuite(passed_name):
     log('executing %s' % passed_name)
     return TestSuite(passed_name)
 
-
 def get_date():
     """tbc..."""
     return datetime.datetime.now().strftime("%Y-%m-%d_%H:%m")
-
 
 def write_xml_report(testsuites, test_name=''):
     """tbc..."""
@@ -65,12 +55,9 @@ def write_xml_report(testsuites, test_name=''):
     xml.write(test_name)
 
 # bv serial commands helper
-
-
 def bv_send(msg):
     """tbc..."""
     BV_SERIAL.write(b'%s\r' % msg)
-
 
 def softreset_busvoodoo():
     """tbc..."""
@@ -81,7 +68,6 @@ def softreset_busvoodoo():
     # quit to HiZ mode
     bv_send('q')
 
-
 def open_protocol(i_protocol):
     """tbc..."""
     bv_send('m %s' % i_protocol)
@@ -89,8 +75,6 @@ def open_protocol(i_protocol):
         bv_send('')
 
 ### GENERIC TEST FUNCTIONNS###
-
-
 def generic_input(passed_input, i_expectation):
     """tbc..."""
     # flush buffer before sending command
@@ -104,7 +88,6 @@ def generic_input(passed_input, i_expectation):
             return [1, output]
     return [0, output]
 
-
 def generic_input_test(i_input, i_expectation, testname):
     """tbc..."""
     i_testcase = TestCase(testname)
@@ -115,7 +98,6 @@ def generic_input_test(i_input, i_expectation, testname):
         return i_testcase
     success(testname)
     return i_testcase
-
 
 def generic_inputs(i_inputs, i_expectations):
     """tbc..."""
@@ -133,7 +115,6 @@ def generic_inputs(i_inputs, i_expectations):
         if i_result[0] > 0:
             return [1, outputs]
     return [0, outputs]
-
 
 def get_protocols(i_protocols):
     """tbc..."""
@@ -159,8 +140,6 @@ def get_protocols(i_protocols):
     return supported_protocols
 
 # TEST SPECIIC FUNCTIONS
-
-
 def prot_default_settings_test(i_protocol):
     """tbc..."""
     i_testcase = TestCase('default protocol test: %s' % i_protocol)
@@ -184,7 +163,6 @@ def prot_default_settings_test(i_protocol):
     #
     success('default protocol %s test' % i_protocol)
     return i_testcase
-
 
 def selftest():
     """tbc..."""
@@ -212,11 +190,9 @@ def selftest():
         success(output)
     return [test_case_s, test_case_selftest]
 
-
 def pinstest():
     """Runs the pins-test BV command via analog multiplexer on testboard"""
     print "TBC..."
-
 
 ############### actual script #####################
 # bv output is ansi colored, so we need to replace
