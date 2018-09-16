@@ -180,7 +180,7 @@ parser.add_argument("-W", "--hardware_version", required=True, help="hardware ve
 # TODO: Ask whether the flavor is important for testing?
 #parser.add_argument("-F", "--flavor", required=True, help="flavor of BusVoodoo under test (light,full)")
 parser.add_argument("-S", "--serial_address", required=True, help="Path to BusVoodoo serial device e.g. '/dev/ttyACM0'")
-parser.add_argument("-t", "--testboard", help="Set serial address of BusVoodoo testboard to run all general tests.")
+parser.add_argument("-t", "--testboard_address", help="Set serial address of BusVoodoo testboard to run all general tests.")
 parser.add_argument("-g", "--general_tests", action='store_true', help="Set to execute general tests")
 parser.add_argument("-d", "--default_protocols_test", action='store_true', help="Testsuite which opens every protocol mode supported by passed 'hardware_version'")
 parser.add_argument("-p", "--protocol_command_tests", help="Execute commands test. Pass 'all' or comma separated string holding protocols 'spi,1-wire,uart'.")
@@ -193,20 +193,27 @@ log('opening Busvoodoo configuration YAML file...')
 with open("busvoodoo_e2e_tests.yml", 'r') as stream:
     yaml = yaml.load(stream)
 
-log('init serial connection to BusVoodoo...')
-bv_serial = serial.Serial('/dev/ttyACM0', timeout=1)
-softreset_busvoodoo() # clean start
+try:
+    log('init serial connection to BusVoodoo...')
+    bv_serial = serial.Serial(args.serial_address, timeout=1)
+    softreset_busvoodoo() # clean start
+except:
+    error("serial connection to busvoodoo could NOT been established!")
+    sys.exit(1)
 
 log('verifying passed HW_VERSION with device HW_VERSION')
 if generic_input('v', ['hardware version: %s' % args.hardware_version])[0] > 0:
     error("passed HW_VERSION does NOT match device HW_VERSION!")
     sys.exit(1)
 
-if args .testboard:
-    log('...init serial connection to testboard...')
-    tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
-
-
+if args.testboard_address:
+    try:
+        log('init serial connection to testboard...')
+        tb_serial = serial.Serial('/dev/ttyACM1', timeout=1)
+    except:
+        error("serial connection to testboard could NOT been established!")
+        sys.exit(1)
+    # TODO: introduce check that it's the testboard
 
 # GENERAL COMMANDS TESTS
 if args.general_tests:
@@ -225,7 +232,7 @@ if args.general_tests:
         testsuite.add_testcase(testcase)
 
     # special test cases which needs testboard
-    if args.testboard:
+    if args.testboard_address:
         print 'tbc'
         #for testcase in pinstest():
         #testsuite.add_testcase(testcase)
