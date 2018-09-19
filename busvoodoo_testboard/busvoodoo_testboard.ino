@@ -4,7 +4,7 @@
 
 
 */
-char version = '0.1'
+const char version[ ] = "BusVoodoo testboard v0.1";
 // PINS
 // multiplexer (MP)
 int MP_VCC = 2; // D2
@@ -163,7 +163,7 @@ void disable_multiplexer() {
 }
 
 void send_version() {
-  ack("BusVoodoo testboard v" + version)
+  ack(version);
 }
 
 /* takes number [0,15] and uses
