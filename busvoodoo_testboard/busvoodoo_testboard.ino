@@ -30,7 +30,7 @@ void setup() {
   pinMode(MP_S2, OUTPUT);
   pinMode(MP_S3, OUTPUT);
   pinMode(MP_EN, OUTPUT);
-  pinMode(MP_VCC, INPUT);
+  pinMode(MP_VCC, OUTPUT);
   pinMode(BV_DFU_MODE, OUTPUT);
   pinMode(RESET_BUSVOODOO, OUTPUT);
   pinMode(RESET_FLASHBOARD, OUTPUT);
@@ -41,7 +41,8 @@ void setup() {
   digitalWrite(MP_S1, LOW);
   digitalWrite(MP_S2, LOW);
   digitalWrite(MP_S3, LOW);
-  digitalWrite(MP_EN, LOW);
+  digitalWrite(MP_EN, HIGH);
+  digitalWrite(MP_VCC, LOW);
   digitalWrite(BV_DFU_MODE, LOW);
   digitalWrite(RESET_BUSVOODOO, LOW);
   digitalWrite(RESET_FLASHBOARD, LOW);
@@ -154,7 +155,8 @@ void reset(char device) {
 }
 
 void disable_multiplexer() {
-  digitalWrite(MP_EN, LOW);
+  digitalWrite(MP_VCC, LOW);
+  digitalWrite(MP_EN, HIGH);
   digitalWrite(MP_S0, LOW);
   digitalWrite(MP_S1, LOW);
   digitalWrite(MP_S2, LOW);
@@ -199,6 +201,7 @@ void set_multiplexer(char c0, char c1, char c2, char c3) {
   }
 
   digitalWrite(MP_EN, LOW);
+  digitalWrite(MP_VCC, HIGH);
   ack("set_multiplexer()");
 }
 
