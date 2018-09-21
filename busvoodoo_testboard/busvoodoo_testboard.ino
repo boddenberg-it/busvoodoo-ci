@@ -24,6 +24,10 @@ int RESET_YOURSELF = 17; // A3
 char b[16];
 
 void setup() {
+  // must be at first otheriwse a boot loop
+  // will happen. (Initialised LOW)
+  digitalWrite(RESET_YOURSELF, HIGH);
+
   // settings I/O modes
   pinMode(MP_S0, OUTPUT);
   pinMode(MP_S1, OUTPUT);
@@ -46,7 +50,7 @@ void setup() {
   digitalWrite(BV_DFU_MODE, LOW);
   digitalWrite(RESET_BUSVOODOO, LOW);
   digitalWrite(RESET_FLASHBOARD, LOW);
-  digitalWrite(RESET_YOURSELF, LOW);
+  digitalWrite(RESET_YOURSELF, HIGH);
 
   Serial.begin(9600);
   Serial.println("BusVoodoo testboard initialised...");
@@ -106,8 +110,8 @@ void fill_buffer() {
 
 void reset_all() {
   digitalWrite(RESET_BUSVOODOO, HIGH);
-  digitalWrite(RESET_FLASHBOARD, HIGH);
-  digitalWrite(RESET_YOURSELF, HIGH);
+  //WIP digitalWrite(RESET_FLASHBOARD, LOW);
+  digitalWrite(RESET_YOURSELF, LOW);
   // no ack can be send
 }
 
@@ -147,7 +151,7 @@ void reset(char device) {
         ack("reset flashboard");
       } break;
     case 't': {
-        digitalWrite(RESET_YOURSELF, HIGH);
+        digitalWrite(RESET_YOURSELF, LOW);
       } break;
     default:
       error("reset device not known (b|f|t)");
