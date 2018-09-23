@@ -1,33 +1,38 @@
 /*
+  DATE: 23.09.2018
+
+  MAINTAINER: andre@blobb.me
+
   USED BOARD: Arduino Nano
-  MAINTAINER: andre@boddenberg.it
 
+  USED MULTIPLEXER: CD74HC4067 CMOS 16 Channel Analog
+		    Digital Multiplexer Breakout Module
 
+  read ./README.md and/or help function below for further information.
 */
-const char version[ ] = "BusVoodoo testboard v0.1";
-// PINS
-// multiplexer (MP)
-int MP_VCC = 2; // D2
+
+const char version[ ] = "BusVoodoo testboard v0.3";
+
+// multiplexer (MP) pins (directly connected)
+int MP_VCC = 2;// D2
 int MP_EN = 3; // D3
 int MP_S0 = 4; // D4
 int MP_S1 = 5; // D5
 int MP_S2 = 6; // D6
 int MP_S3 = 7; // D7
-// BusVoodoo (BV)
-int BV_DFU_MODE = 14; // A0
-// USB hub resets
+
+// BusVoodoo (BV) pins are not directly
+// connected. Pin A0 and A1 are connected
+// to the gate of a P-MOSFET.
+int BV_DFU_MODE = 14;     // A0
 int RESET_BUSVOODOO = 15; // A1
-int RESET_FLASHBOARD = 16; // A2
-int RESET_YOURSELF = 17; // A3
+// A0 MOSFET connects BV DFU Pin to 5V
+// A1 MOSFET connects BV RST Pin to GND
 
 // buffer for incoming requests
 char b[16];
 
 void setup() {
-  // must be at first otheriwse a boot loop
-  // will happen. (Initialised LOW)
-  digitalWrite(RESET_YOURSELF, HIGH);
-
   // settings I/O modes
   pinMode(MP_S0, OUTPUT);
   pinMode(MP_S1, OUTPUT);
@@ -37,20 +42,16 @@ void setup() {
   pinMode(MP_VCC, OUTPUT);
   pinMode(BV_DFU_MODE, OUTPUT);
   pinMode(RESET_BUSVOODOO, OUTPUT);
-  pinMode(RESET_FLASHBOARD, OUTPUT);
-  pinMode(RESET_YOURSELF, OUTPUT);
 
-  // pulling every output low
   digitalWrite(MP_S0, LOW);
   digitalWrite(MP_S1, LOW);
   digitalWrite(MP_S2, LOW);
   digitalWrite(MP_S3, LOW);
+  // multiplexer is disabled when MP_EN is HIGH
   digitalWrite(MP_EN, HIGH);
-  digitalWrite(MP_VCC, LOW);
+  digitalWrite(MP_VCC, HIGH);
   digitalWrite(BV_DFU_MODE, LOW);
   digitalWrite(RESET_BUSVOODOO, LOW);
-  digitalWrite(RESET_FLASHBOARD, LOW);
-  digitalWrite(RESET_YOURSELF, HIGH);
 
   Serial.begin(9600);
   Serial.println("BusVoodoo testboard initialised...");
@@ -58,27 +59,21 @@ void setup() {
 
 void loop() {
 
+  // check for pending request
   if (Serial.available() > 0) {
 
     fill_buffer();
-
     char request = b[0];
 
     switch (request) {
-      case 'a': {
-          reset_all();
-        } break;
       case 'b': {
           boot_bv_into_dfu_mode();
-        } break;
-      case 'p': {
-          ping();
         } break;
       case 'g': {
           get_multiplexer();
         } break;
       case 'r': {
-          reset(b[1]);
+          reset_busvoodoo();
         } break;
       case 's': {
           set_multiplexer(b[1], b[2], b[3], b[4]);
@@ -89,33 +84,59 @@ void loop() {
       case 'v': {
           send_version();
         } break;
+      case 'h': {
+          help();
+        } break;
       default:
         error("command not found");
     }
-    // flush buffer
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
   }
+
 }
 
-// functions
+// FUNCTIONS
+void help() {
+  Serial.println("");
+  Serial.println(version);
+  Serial.println("maintainer: andre@blobb.me");
+  Serial.println("date: 22.09.2018");
+  Serial.println("");
+  Serial.println("This testboard provides following functionalities:");
+  Serial.println("   - [r] reset the BusVoodoo");
+  Serial.println("   - [b] boot BusVoodoo into DFU BOOT mode");
+  Serial.println("   - [g] get current multiplexer settings:");
+  Serial.println("         'ACK: 0-1010' first bool represents !state of multiplexer,");
+  Serial.println("                       second bool[] represents states of s0,s1,s2,s3");
+  Serial.println("");
+  Serial.println("   - [s1010] enable multiplexer and set channel, e.g. 1010 = 5 (LSB first)");
+  Serial.println("             Note: simply go from 0-8 for the pinstest");
+  Serial.println("");
+  Serial.println("   - [d] disable multiplexer");
+  Serial.println("   - [h] show this help");
+  Serial.println("   - [v] get version of firmware");
+  Serial.println("");
+  Serial.println("More information about:");
+  Serial.println("BusVoodo: https://busvoodoo.cuvoodoo.info/");
+  Serial.println("BusVoodo-CI: https://git.boddenberg.it/busvoodoo-ci/");
+  Serial.println("");
+}
+
+// HELPERS
+void error(String e) {
+  Serial.println("ERROR: " + e);
+}
+
+void ack(String a) {
+  Serial.println("ACK: " + a);
+}
+
 void fill_buffer() {
   for (int i = 0; i < 16; i++) {
     b[i] = Serial.read();
-    delay(5); // necessary otherwise
-    // only first char is read
+    delay(5); // necessary otherwise only first char is read
   }
 }
 
-void reset_all() {
-  digitalWrite(RESET_BUSVOODOO, HIGH);
-  //WIP digitalWrite(RESET_FLASHBOARD, LOW);
-  digitalWrite(RESET_YOURSELF, LOW);
-  // no ack can be send
-}
-
-// helper for get_multiplexer()
 char getState(int pin) {
   if (digitalRead(pin)) {
     return '1';
@@ -123,8 +144,37 @@ char getState(int pin) {
   return '0';
 }
 
+// EXPOSED FUNCTIONS
+// help is first occurring functions though
+void send_version() {
+  ack(version);
+}
+
+void reset_busvoodoo() {
+  digitalWrite(RESET_BUSVOODOO, HIGH);
+  delay(50);
+  digitalWrite(RESET_BUSVOODOO, LOW);
+  ack("reset_busvoodoo()");
+}
+
+void boot_bv_into_dfu_mode() {
+  digitalWrite(BV_DFU_MODE, HIGH);
+  reset_busvoodoo();
+  delay(5000); // give BusVoodoo
+  // some time to boot into DFU
+  digitalWrite(BV_DFU_MODE, LOW);
+  ack("boot_bv_into_dfu_mode()");
+}
+
+void disable_multiplexer() {
+  digitalWrite(MP_EN, HIGH);
+  ack("disable_multiplexer()");
+}
+
 void get_multiplexer() {
   String result = "";
+  result = result + getState(MP_EN);
+  result = result + "-";
   result = result + getState(MP_S0);
   result = result + getState(MP_S1);
   result = result + getState(MP_S2);
@@ -132,55 +182,10 @@ void get_multiplexer() {
   ack(result);
 }
 
-void ping() {
-  ack("pong");
-}
-
-void reset(char device) {
-  switch (device) {
-    case 'b': {
-        digitalWrite(RESET_BUSVOODOO, HIGH);
-        delay(500);
-        digitalWrite(RESET_BUSVOODOO, LOW);
-        ack("reset BusVoodoo");
-      } break;
-    case 'f': {
-        digitalWrite(RESET_FLASHBOARD, HIGH);
-        delay(500);
-        digitalWrite(RESET_FLASHBOARD, LOW);
-        ack("reset flashboard");
-      } break;
-    case 't': {
-        digitalWrite(RESET_YOURSELF, LOW);
-      } break;
-    default:
-      error("reset device not known (b|f|t)");
-  }
-}
-
-void disable_multiplexer() {
-  digitalWrite(MP_VCC, LOW);
-  digitalWrite(MP_EN, HIGH);
-  digitalWrite(MP_S0, LOW);
-  digitalWrite(MP_S1, LOW);
-  digitalWrite(MP_S2, LOW);
-  digitalWrite(MP_S3, LOW);
-  ack("disable_multiplexer()");
-}
-
-void send_version() {
-  ack(version);
-}
-
-/* takes number [0,15] and uses
-   the first 4 bits to set
-   the multiplexer.
-*/
 void set_multiplexer(char c0, char c1, char c2, char c3) {
-
   // disable multiplexer
   digitalWrite(MP_EN, HIGH);
-  delay(500);
+  delay(50);
 
   // set multiplexer
   if (c0 == '1') {
@@ -204,25 +209,7 @@ void set_multiplexer(char c0, char c1, char c2, char c3) {
     digitalWrite(MP_S3, LOW);
   }
 
+  // enabler multiplexer
   digitalWrite(MP_EN, LOW);
-  digitalWrite(MP_VCC, HIGH);
   ack("set_multiplexer()");
-}
-
-void error(String e) {
-  Serial.println("ERROR: " + e);
-}
-
-void ack(String a) {
-  Serial.println("ACK: " + a);
-}
-
-void boot_bv_into_dfu_mode() {
-  digitalWrite(BV_DFU_MODE, HIGH);
-  digitalWrite(RESET_BUSVOODOO, HIGH);
-  delay(500);
-  digitalWrite(RESET_BUSVOODOO, LOW);
-  delay(1000);
-  digitalWrite(BV_DFU_MODE, LOW);
-  ack("boot_bv_into_dfu_mode()");
 }
