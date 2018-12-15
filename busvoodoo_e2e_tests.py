@@ -93,18 +93,16 @@ def generic_input_test(i_input, i_expectation, testname):
     i_testcase = TestCase(testname)
     i_result = generic_input(i_input, i_expectation)
     if i_result[0] > 0:
-        i_testcase.result = Error(ANSI_ESCAPE.sub('', i_result[1]), 'error')
+        test_case.result = Error(ANSI_ESCAPE.sub('', i_result[1]), 'error')
         failure(testname)
-        print(i_result[1])
         return i_testcase
     success(testname)
     return i_testcase
 
 def generic_inputs(i_inputs, i_expectations):
     """tbc..."""
-
+    err_msg = ' generic_inputs(): inputs[] and expectations[] do not have equal length'
     if len(i_inputs) != len(i_expectations):
-        err_msg = 'generic_inputs(): inputs[] and expectations[] do not have equal length'
         error(err_msg)
         return [1, err_msg]
 
@@ -135,7 +133,7 @@ def get_protocols(i_protocols):
 
     supported_protocols = []
     for i_protocol in i_protocols:
-        supported_versions = YAML["protocols"][i_protocol]['hardware_version'].split(
+        supported_versions = YAML["protocols"][i_protocols]['hardware_version'].split(
             ',')
         if ARGS.hardware_version in supported_versions:
             supported_protocols.insert(len(supported_protocols), i_protocol)
@@ -175,20 +173,18 @@ def selftest():
 
     bv_send('s')
     bv_send(' ')
-    output = ''.join(BV_SERIAL.readlines())
+    output = '.'.join(BV_SERIAL.readlines())
     if 'self-test succeeded' not in output:
-        failure(str_s)
-        print(output)
+        error(str_s)
         test_case_s.result = Error(ANSI_ESCAPE.sub('', output), 'error')
     else:
         success(str_s)
 
     bv_send('self-test')
     bv_send(' ')
-    output = ''.join(BV_SERIAL.readlines())
+    output = '.'.join(BV_SERIAL.readlines())
     if 'self-test succeeded' not in output:
-        failure(str_self_test)
-        print(output)
+        error(str_self_test)
         test_case_selftest.result = Error(ANSI_ESCAPE.sub('', output), 'error')
     else:
         success(output)

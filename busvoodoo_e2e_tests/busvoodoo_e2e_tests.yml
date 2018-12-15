@@ -18,10 +18,10 @@ commands:
     expectation: ['I/O connector pinout:']
   power off:
     input: ['P off', 'power off']
-    expectation: ['off', 'power rail']
+    expectation: ['switched off']
   power on:
     input: ['P on', 'power on']
-    expectation: ['5V', '3V3', '5.', '3.']
+    expectation: ['5V', '3V3', 'switched on']
   voltage:
     input: ['L', 'LV']
     expectation: ['external voltage input']
